@@ -115,10 +115,15 @@ Aborde causas, sintomas, hábitos e dicas preventivas ligadas à saúde das unha
     )
 
     tarefa_conclusao = Task(
-        description="Escreva a conclusão reforçando os cuidados com as unhas e convidando o leitor a procurar avaliação com a Dra. Tatiana Gabbi.",
-        expected_output="Parágrafos finais com CTA suave e tom de autoridade médica.",
-        agent=agente_conclusao
-    )
+    description="""Escreva a conclusão reforçando os cuidados com as unhas e convidando o leitor a procurar avaliação com a Dra. Tatiana Gabbi.
+Inclua, se fizer sentido, os seguintes links de contato em HTML:
+
+<p><a href="https://api.whatsapp.com/send?phone=5511991578420&text=Oi!%20Encontrei%20seu%20contato%20no%20site%20e%20gostaria%20de%20mais%20informações" target="_blank">Fale com a Dra. Tatiana pelo WhatsApp</a></p>
+<p><a href="https://www.instagram.com/dratatianagabbi/" target="_blank">Siga a Dra. Tatiana no Instagram</a></p>""",
+    expected_output="Parágrafos finais com CTA suave e links para WhatsApp e Instagram, se adequado.",
+    agent=agente_conclusao
+)
+
 
     tarefa_unificar = Task(
         description="Una as partes em HTML formatado para WordPress com fluidez e linguagem coerente.",

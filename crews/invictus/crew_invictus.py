@@ -103,24 +103,27 @@ def build_crew_invictus(tema: str, palavra_chave: str):
 
     tarefa_intro = Task(
         description=f"""Escreva a introducao do artigo sobre '{tema}' com a palavra-chave '{palavra_chave}', em PT-BR.
-Use <p> e linguagem clara, conectando com a dor do leitor. Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
+    Use <p> e linguagem clara, conectando com a dor do leitor. Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
         expected_output="Introducao em HTML com dois paragrafos contendo a palavra-chave de forma natural.",
         agent=agente_intro
     )
 
     tarefa_meio = Task(
         description=f"""Escreva o corpo do artigo com subtitulos <h2>, paragrafos explicativos <p> e listas <ul><li> com dicas praticas.
-Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
+    Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
         expected_output="HTML com ao menos 800 palavras, com <h2>, <p> e <ul><li>.",
         agent=agente_meio
     )
 
     tarefa_conclusao = Task(
         description=f"""Escreva a conclusao do artigo com um resumo e chamada para acao (CTA) clara, em HTML.
-Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
-        expected_output="Paragrafos finais com CTA em <p>.",
+    Inclua, se fizer sentido, um link para contato via WhatsApp no seguinte formato:
+    <p><a href="https://api.whatsapp.com/send?phone=5511947974924&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">Fale conosco pelo WhatsApp</a></p>
+    Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
+        expected_output="Paragrafos finais com CTA em <p> e link para WhatsApp, se adequado.",
         agent=agente_conclusao
     )
+
 
     tarefa_unificar = Task(
         description="Una introducao, corpo e conclusao em um unico HTML com coerencia e fluidez. Use tags válidas e garanta >1000 palavras.",

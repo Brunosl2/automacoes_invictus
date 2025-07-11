@@ -112,8 +112,12 @@ def build_crew_guilherme(tema: str, palavra_chave: str):
             agent=agente_meio
         ),
         Task(
-            description="Conclua o post com reforço sobre a importância de avaliar lesões precocemente e convite à consulta com o Dr. Guilherme Gadens.",
-            expected_output="Conclusão com CTA discreto e profissional.",
+            description="""Conclua o post com reforço sobre a importância de avaliar lesões precocemente e convite à consulta com o Dr. Guilherme Gadens.
+        Inclua, se fizer sentido, os seguintes links de contato em HTML:
+
+        <p><a href="https://api.whatsapp.com/send?phone=5541987877858&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">Agende sua consulta pelo WhatsApp</a></p>
+        <p><a href="https://www.instagram.com/gadensguilherme/" target="_blank">Siga o Dr. Guilherme no Instagram</a></p>""",
+            expected_output="Conclusão com CTA discreto e profissional, incluindo links para WhatsApp e Instagram, se adequado.",
             agent=agente_conclusao
         ),
         Task(

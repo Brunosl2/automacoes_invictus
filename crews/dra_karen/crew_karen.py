@@ -112,8 +112,11 @@ def build_crew_karen(tema: str, palavra_chave: str):
             agent=agente_meio
         ),
         Task(
-            description="Finalize o artigo com reforço sobre a importância do diagnóstico precoce e convite ao agendamento com a Dra. Karen Voltan.",
-            expected_output="Conclusão em <p> com CTA sutil e tom acolhedor.",
+            description="""Finalize o artigo com reforço sobre a importância do diagnóstico precoce e convite ao agendamento com a Dra. Karen Voltan.
+        Inclua, se fizer sentido, o seguinte link de agendamento em HTML:
+
+        <p><a href="https://drakarenvoltan.com/agendamento" target="_blank">Clique aqui para agendar uma consulta com a Dra. Karen Voltan</a></p>""",
+            expected_output="Conclusão em <p> com CTA sutil e link para agendamento, se adequado.",
             agent=agente_conclusao
         ),
         Task(

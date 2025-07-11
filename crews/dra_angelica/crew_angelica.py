@@ -112,8 +112,12 @@ def build_crew_angelica(tema: str, palavra_chave: str):
             agent=agente_meio
         ),
         Task(
-            description="Conclua o artigo com um resumo dos benefícios do tratamento e convide o leitor para agendar uma consulta com a Dra. Angélica Bauer.",
-            expected_output="Conclusão em <p> com CTA profissional e discreto.",
+            description="""Conclua o artigo com um resumo dos benefícios do tratamento e convide o leitor para agendar uma consulta com a Dra. Angélica Bauer.
+        Inclua, se fizer sentido, os seguintes links de contato em HTML:
+
+        <p><a href="https://api.whatsapp.com/send?phone=5551999216941&text=Oi!%20Encontrei%20seu%20perfil%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">Agende sua consulta pelo WhatsApp</a></p>
+        <p><a href="https://www.instagram.com/angelicabauerdermato/" target="_blank">Siga a Dra. Angélica no Instagram</a></p>""",
+            expected_output="Conclusão em <p> com CTA profissional e links para WhatsApp e Instagram, se adequado.",
             agent=agente_conclusao
         ),
         Task(

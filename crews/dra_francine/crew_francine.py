@@ -117,10 +117,15 @@ Use este resumo da concorrência:\n\n{dados_concorrencia}""",
     )
 
     tarefa_conclusao = Task(
-        description=f"""Escreva a conclusão do artigo, reforçando os cuidados com a pele e incentivando agendamento com a Dra. Francine Costa.""",
-        expected_output="Parágrafos finais em <p> com CTA suave e empático.",
+        description=f"""Escreva a conclusão do artigo, reforçando os cuidados com a pele e incentivando agendamento com a Dra. Francine Costa.
+Inclua, se fizer sentido, os seguintes links de contato em HTML:
+
+<p><a href="https://api.whatsapp.com/send?phone=5511966189853&text=Oi!%20Encontrei%20seu%20perfil%20no%20Google%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es" target="_blank">Fale com a Dra. Francine pelo WhatsApp</a></p>
+<p><a href="https://www.instagram.com/drafrancinecosta" target="_blank">Siga a Dra. Francine no Instagram</a></p>""",
+        expected_output="Parágrafos finais em <p> com CTA suave e links para WhatsApp e Instagram, se adequado.",
         agent=agente_conclusao
     )
+
 
     tarefa_unificar = Task(
         description="Una introdução, corpo e conclusão em um único HTML. Use tags válidas e mantenha fluidez e coerência.",

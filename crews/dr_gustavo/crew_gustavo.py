@@ -112,8 +112,11 @@ def build_crew_gustavo(tema: str, palavra_chave: str):
             agent=agente_meio
         ),
         Task(
-            description="Conclua o post reforçando a confiança na clínica THÁ e convidando para uma avaliação. Use CTA suave.",
-            expected_output="HTML com parágrafo final e chamada para ação confiável.",
+            description="""Conclua o post reforçando a confiança na clínica THÁ e convidando para uma avaliação. Use CTA suave.
+        Inclua, se fizer sentido, o seguinte link de Instagram em HTML:
+
+        <p><a href="https://www.instagram.com/clinicathadermatologia/" target="_blank">Conheça mais sobre a Clínica THÁ no Instagram</a></p>""",
+            expected_output="HTML com parágrafo final e chamada para ação confiável, com link para Instagram, se adequado.",
             agent=agente_conclusao
         ),
         Task(

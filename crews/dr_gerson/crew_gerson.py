@@ -112,8 +112,12 @@ def build_crew_gerson(tema: str, palavra_chave: str):
             agent=agente_meio
         ),
         Task(
-            description="Escreva a conclusão do post com chamada para ação (CTA) acolhedora e reforço da confiança no Dr. Gerson.",
-            expected_output="Parágrafo final com CTA para agendamento de consulta.",
+            description="""Escreva a conclusão do post com chamada para ação (CTA) acolhedora e reforço da confiança no Dr. Gerson.
+        Inclua, se fizer sentido, os seguintes links de contato em HTML:
+
+        <p><a href="https://api.whatsapp.com/send?phone=5541999380202&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">Agende sua consulta pelo WhatsApp</a></p>
+        <p><a href="https://www.instagram.com/dr.gersonrighetto/" target="_blank">Siga o Dr. Gerson no Instagram</a></p>""",
+            expected_output="Parágrafo final com CTA para agendamento de consulta, incluindo links para WhatsApp e Instagram, se adequado.",
             agent=agente_conclusao
         ),
         Task(
