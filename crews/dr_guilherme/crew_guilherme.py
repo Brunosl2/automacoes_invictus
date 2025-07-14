@@ -141,10 +141,11 @@ def build_crew_guilherme(tema: str, palavra_chave: str):
             agent=agente_seo
         ),
         Task(
-            description="Analise o conteúdo final em HTML. Crie um título chamativo e técnico para o artigo, uma meta description envolvente com até 160 caracteres e mantenha o HTML do corpo como 'html_body'. Gere um JSON assim:\n{\n  'titulo': '...',\n  'meta_description': '...',\n  'html_body': '...'\n}",
+            description="Analise o conteúdo final em HTML. Crie um título chamativo e técnico para o artigo, uma meta description envolvente com até 160 caracteres e mantenha o HTML do corpo como 'html_body'. Gere um JSON VÁLIDO assim:\n{\n  \"titulo\": \"...\",\n  \"meta_description\": \"...\",\n  \"html_body\": \"...\"\n}\nNão escreva nada antes ou depois do JSON.",
             expected_output="JSON pronto para API.",
             agent=agente_finalizador
         )
+
     ]
 
     crew = Crew(
