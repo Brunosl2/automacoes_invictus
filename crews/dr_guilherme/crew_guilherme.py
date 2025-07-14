@@ -107,10 +107,11 @@ def build_crew_guilherme(tema: str, palavra_chave: str):
             agent=agente_intro
         ),
         Task(
-            description=f"Desenvolva o corpo do artigo com <h2>, <p> e <ul><li>, explicando exames como dermatoscopia digital, mapeamento corporal e cirurgia de Mohs. Baseie-se neste resumo:\n\n{dados_concorrencia}",
-            expected_output="Corpo do artigo com linguagem técnica, 800+ palavras e estrutura HTML.",
+            description="Desenvolva o corpo do artigo em HTML usando <h2>, <p> e listas <ul><li>. Explique de forma clara e didática os exames de dermatoscopia digital, mapeamento corporal e cirurgia de Mohs. Utilize linguagem técnica e acessível, com foco em orientar o leitor.",
+            expected_output="Corpo do artigo em HTML, com 400+ palavras, estruturado em subtítulos e parágrafos claros.",
             agent=agente_meio
         ),
+
         Task(
             description="""Conclua o post com reforço sobre a importância de avaliar lesões precocemente e convite à consulta com o Dr. Guilherme Gadens.
         Inclua, se fizer sentido, os seguintes links de contato em HTML:
