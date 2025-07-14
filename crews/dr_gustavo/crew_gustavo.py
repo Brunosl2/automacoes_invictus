@@ -91,14 +91,25 @@ def build_crew_gustavo(tema: str, palavra_chave: str):
         llm=llm,
     )
 
-    agente_finalizador = Agent(
-        role="Empacotador para API",
-        goal="Extrair título, descrição e <body> do HTML final em formato JSON",
-        backstory="Responsável por transformar o conteúdo final em um pacote limpo, útil e direto para publicação automática.",
+    agente_titulo_meta = Agent(
+        role="Gerador de Título e Meta Description",
+        goal="Criar título chamativo e meta description envolvente para dermatologia estética",
+        backstory="Especialista em headlines para clínicas dermatológicas, com foco em impacto, clareza e SEO.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
     )
+
+
+    agente_finalizador = Agent(
+        role="Empacotador para API",
+        goal="Gerar JSON final para API com título, meta description e HTML",
+        backstory="Responsável por consolidar o conteúdo final para publicação automática no site.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
 
     tarefas = [
         Task(
@@ -140,10 +151,16 @@ def build_crew_gustavo(tema: str, palavra_chave: str):
             agent=agente_seo
         ),
         Task(
-            description="Extraia título, meta description e conteúdo <body> do HTML final. Formate como JSON para API.",
-            expected_output="JSON com: titulo, meta_description, html_body.",
+            description="Crie um título chamativo e uma meta description de até 160 caracteres para o conteúdo gerado sobre '{tema}'. O título deve ser impactante e adequado à dermatologia estética. A meta description deve resumir o conteúdo de forma envolvente.",
+            expected_output="Título e meta description prontos.",
+            agent=agente_titulo_meta
+        ),
+        Task(
+            description="Receba o título, a meta description e o HTML final do artigo. Monte um JSON com os seguintes campos:\n{\n  'titulo': '...',\n  'meta_description': '...',\n  'html_body': '...'\n}\nO campo 'html_body' deve conter o conteúdo completo do artigo em HTML. Não altere nada do conteúdo original.",
+            expected_output="JSON pronto para API.",
             agent=agente_finalizador
-        )
+        ),
+
     ]
 
     crew = Crew(
