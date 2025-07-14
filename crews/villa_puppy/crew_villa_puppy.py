@@ -8,12 +8,12 @@ from langchain_openai import ChatOpenAI
 load_dotenv()
 llm = ChatOpenAI(temperature=0.4)
 
-def buscar_concorrentes_serpapi(palavra_chave):
+def buscar_concorrentes_serpapi_resumido(palavra_chave, limite=3):
     search = GoogleSearch({
         "q": palavra_chave,
         "hl": "pt-br",
         "gl": "br",
-        "num": 5,
+        "num": limite,
         "api_key": os.getenv("SERPAPI_API_KEY")
     })
     results = search.get_dict()
@@ -21,12 +21,13 @@ def buscar_concorrentes_serpapi(palavra_chave):
     for res in results.get("organic_results", []):
         titulo = res.get("title", "")
         snippet = res.get("snippet", "")
-        link = res.get("link", "")
-        output.append(f"Título: {titulo}\nTrecho: {snippet}\nURL: {link}\n")
+        output.append(f"- {titulo}: {snippet}")
     return "\n".join(output)
 
+
 def build_crew_villapuppy(tema: str, palavra_chave: str):
-    dados_concorrencia = buscar_concorrentes_serpapi(palavra_chave)
+    dados_concorrencia = buscar_concorrentes_serpapi_resumido(palavra_chave)
+
 
     agente_intro = Agent(
         role="Redator Pet Lover",
@@ -107,8 +108,8 @@ def build_crew_villapuppy(tema: str, palavra_chave: str):
             agent=agente_intro
         ),
         Task(
-            description=f"Escreva o corpo do artigo com <h2>, <p> e listas <ul><li>. Descreva serviços como banho, tosa, espaço de socialização, filhotes com pedigree e atendimento veterinário. Use este resumo da concorrência:\n\n{dados_concorrencia}",
-            expected_output="Corpo com pelo menos 800 palavras, linguagem acessível e emocional.",
+            description=f"Escreva o corpo do artigo em HTML com <h2>, <p> e listas <ul><li>. Fale sobre serviços como banho, tosa, espaço de socialização, filhotes com pedigree e atendimento veterinário. Inspire-se nestas tendências observadas na concorrência:\n\n{dados_concorrencia}\n\nUse linguagem acessível, carinhosa e informativa.",
+            expected_output="Corpo com pelo menos 800 palavras, bem estruturado e envolvente.",
             agent=agente_meio
         ),
         Task(
