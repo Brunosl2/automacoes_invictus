@@ -137,7 +137,7 @@ def build_crew_villapuppy(tema: str, palavra_chave: str):
             agent=agente_seo
         ),
         Task(
-            description="Extraia <title>, meta description e <body> do HTML. Gere JSON com: titulo, meta_description, html_body.",
+            description="Analise o HTML completo gerado. Crie um título chamativo e adequado para o artigo, uma meta description envolvente de até 160 caracteres e mantenha o conteúdo HTML original como 'html_body'. Gere um JSON com: titulo, meta_description, html_body.",
             expected_output="JSON pronto para API.",
             agent=agente_finalizador
         )
