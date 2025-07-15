@@ -38,19 +38,37 @@ def build_crew_villapuppy(tema: str, palavra_chave: str):
         llm=llm,
     )
 
-    agente_meio = Agent(
-        role="Especialista em Conteúdo Pet",
-        goal="Explicar com clareza os serviços da Villa Puppy e como eles beneficiam o pet",
-        backstory="Profissional apaixonado por pets e bem-estar animal, com habilidade de descrever serviços como banho, tosa, socialização e venda de filhotes de forma clara e envolvente.",
+    agente_meio_h2 = Agent(
+        role="Criador de Subtítulos para Conteúdo Pet",
+        goal="Elaborar subtítulos H2 informativos sobre serviços e cuidados pet",
+        backstory="Especialista em conteúdos petshop, com foco em escaneabilidade e atratividade.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_meio_lista = Agent(
+        role="Desenvolvedor de Conteúdo Pet",
+        goal="Escrever parágrafos explicativos e listas baseados nos subtítulos, destacando serviços e diferenciais",
+        backstory="Especialista em conteúdos para pet shop e cuidados com animais, focado em linguagem acessível e envolvente.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
     )
 
     agente_conclusao = Agent(
-        role="Fechamento com Emoção",
-        goal="Concluir com um convite carinhoso para conhecer a Villa Puppy",
-        backstory="Especialista em criar chamadas para ação afetivas e empáticas, valorizando a conexão emocional entre pets e tutores.",
+        role="Finalizador de Texto Pet",
+        goal="Encerrar o texto reforçando os diferenciais, sem chamada direta para ação",
+        backstory="Profissional experiente em conclusões institucionais e conteúdos acolhedores para o setor pet.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_contato = Agent(
+        role="Responsável pela Assinatura Personalizada Villa Puppy",
+        goal="Criar uma assinatura final personalizada de acordo com o tema do artigo, mantendo o padrão institucional",
+        backstory="Especialista em comunicação afetiva e institucional da Villa Puppy, garantindo assinatura com destaque adequado ao conteúdo.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
@@ -108,14 +126,36 @@ def build_crew_villapuppy(tema: str, palavra_chave: str):
             agent=agente_intro
         ),
         Task(
-            description=f"Escreva o corpo do artigo em HTML com <h2>, <p> e listas <ul><li>. Fale sobre serviços como banho, tosa, espaço de socialização, filhotes com pedigree e atendimento veterinário. Inspire-se nestas tendências observadas na concorrência:\n\n{dados_concorrencia}\n\nUse linguagem acessível, carinhosa e informativa.",
-            expected_output="Corpo com pelo menos 800 palavras, bem estruturado e envolvente.",
-            agent=agente_meio
+            description=f"""Crie subtítulos <h2> para um post sobre '{tema}', baseado nas tendências da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Lista de subtítulos <h2> relacionados ao tema.",
+            agent=agente_meio_h2
         ),
         Task(
-            description="Conclua o post com CTA convidando o leitor a visitar a Villa Puppy, com tom empático e confiante.",
-            expected_output="Parágrafo de encerramento com chamada para ação.",
+            description=f"""Desenvolva parágrafos <p> e listas <ul><li> com base nos subtítulos.
+Use linguagem afetuosa e informativa, destacando serviços e diferenciais da Villa Puppy.
+Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="HTML com parágrafos e listas relacionados ao tema e subtítulos.",
+            agent=agente_meio_lista
+        ),
+
+        Task(
+            description=f"""Finalize o artigo reforçando os diferenciais do tema '{tema}', sem chamada para ação direta.
+Baseie-se nas tendências observadas na concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Parágrafos finais de conclusão em HTML, sem CTA.",
             agent=agente_conclusao
+        ),
+
+        Task(
+            description="""Adicione ao final do HTML uma assinatura personalizada, mantendo este formato:
+Quer conhecer [destaque relacionado ao tema]? Agende sua visita na Villa Puppy Pet Shop:
+📍 Shopping VillaLobos, Av. Dra. Ruth Cardoso, 4777 – Jardim Universidade Pinheiros, São Paulo/SP
+
+Clique aqui e fale conosco agora pelo WhatsApp!
+https://api.whatsapp.com/send?phone=5511917411212&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações
+
+Villa Puppy – [chamada final relacionada ao tema]""",
+            expected_output="HTML final com assinatura personalizada conforme tema do post.",
+            agent=agente_contato
         ),
         Task(
             description="Una introdução, corpo e conclusão em HTML limpo e bem estruturado para WordPress.",
@@ -146,8 +186,9 @@ def build_crew_villapuppy(tema: str, palavra_chave: str):
 
     crew = Crew(
         agents=[
-            agente_intro, agente_meio, agente_conclusao, agente_unificador,
-            agente_revisor, agente_executor, agente_seo, agente_finalizador
+            agente_intro, agente_meio_h2, agente_meio_lista, agente_conclusao,
+            agente_contato, agente_unificador, agente_revisor, agente_executor,
+            agente_seo, agente_finalizador
         ],
         tasks=tarefas,
         verbose=True
