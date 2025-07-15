@@ -38,19 +38,37 @@ def build_crew_invictus(tema: str, palavra_chave: str):
         llm=llm,
     )
 
-    agente_meio = Agent(
-        role="Redator de Desenvolvimento",
-        goal="Escrever o corpo do artigo com subtopicos claros",
-        backstory="Redator experiente em marketing de conteudo, focado em explicacoes claras e organizadas com subtitulos e listas",
+    agente_meio_h2 = Agent(
+        role="Redator de Subtítulos",
+        goal="Criar subtítulos H2 relevantes para o tema",
+        backstory="Especialista em estruturação de artigos com foco em escaneabilidade e SEO.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_meio_lista = Agent(
+        role="Redator de Listas",
+        goal="Escrever listas e parágrafos explicativos com base nos subtítulos",
+        backstory="Criador de conteúdo focado em listas práticas e explicações objetivas.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
     )
 
     agente_conclusao = Agent(
-        role="Redator de Conclusao",
-        goal="Escrever a conclusao com chamada para acao",
-        backstory="Especialista em encerramentos persuasivos para blog posts com CTA eficaz",
+        role="Redator de Conclusão",
+        goal="Encerrar o texto reforçando o conteúdo apresentado, sem CTA",
+        backstory="Especialista em encerramentos naturais para artigos institucionais.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_contato = Agent(
+        role="Responsável por Contato e Assinatura",
+        goal="Adicionar assinatura padrão da Invictus e link de WhatsApp no final do HTML",
+        backstory="Responsável por garantir a presença da assinatura institucional em todos os posts.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
@@ -108,20 +126,34 @@ def build_crew_invictus(tema: str, palavra_chave: str):
         agent=agente_intro
     )
 
-    tarefa_meio = Task(
-        description=f"""Escreva o corpo do artigo com subtitulos <h2>, paragrafos explicativos <p> e listas <ul><li> com dicas praticas.
-    Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
-        expected_output="HTML com ao menos 800 palavras, com <h2>, <p> e <ul><li>.",
-        agent=agente_meio
+    tarefa_meio_h2 = Task(
+        description=f"""Crie subtítulos <h2> para um artigo sobre '{tema}' com base neste resumo da concorrência:\n\n{dados_concorrencia}""",
+        expected_output="Lista de subtítulos <h2> relevantes.",
+        agent=agente_meio_h2
+    )
+
+    tarefa_meio_lista = Task(
+        description=f"""Com base nos subtítulos fornecidos, escreva parágrafos <p> e listas <ul><li> explicativos sobre '{tema}'.
+Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
+        expected_output="HTML com parágrafos e listas relacionados aos subtítulos.",
+        agent=agente_meio_lista
     )
 
     tarefa_conclusao = Task(
-        description=f"""Escreva a conclusao do artigo com um resumo e chamada para acao (CTA) clara, em HTML.
-    Inclua, se fizer sentido, um link para contato via WhatsApp no seguinte formato:
-    <p><a href="https://api.whatsapp.com/send?phone=5511947974924&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">Fale conosco pelo WhatsApp</a></p>
-    Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
-        expected_output="Paragrafos finais com CTA em <p> e link para WhatsApp, se adequado.",
+        description=f"""Escreva a conclusão do artigo sobre '{tema}' sem chamada para ação.
+Faça um fechamento natural e coeso, em HTML.
+Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
+        expected_output="Conclusão em HTML com <p>, sem CTA.",
         agent=agente_conclusao
+    )
+
+    tarefa_contato = Task(
+        description="""Adicione no final do HTML esta assinatura institucional:
+<p>Clique aqui e agende uma reunião com nossos especialistas.<br>
+<a href="https://api.whatsapp.com/send?phone=5511947974924&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">Fale conosco pelo WhatsApp</a></p>
+<p><strong>Invictus Marketing</strong><br>Av. Casa Verde, 751 – São Paulo - SP</p>""",
+        expected_output="HTML final com assinatura e WhatsApp no final.",
+        agent=agente_contato
     )
 
 
@@ -157,13 +189,13 @@ def build_crew_invictus(tema: str, palavra_chave: str):
 
     crew_invictus = Crew(
         agents=[
-            agente_intro, agente_meio, agente_conclusao, agente_unificador,
-            agente_revisor, agente_executor, agente_seo, agente_finalizador
+            agente_intro, agente_meio_h2, agente_meio_lista, agente_conclusao,
+            agente_contato, agente_unificador, agente_revisor, agente_executor,
+            agente_seo, agente_finalizador
         ],
         tasks=[
-            tarefa_intro, tarefa_meio, tarefa_conclusao,
-            tarefa_unificar, tarefa_revisar, tarefa_corrigir,
-            tarefa_seo, tarefa_finalizar
+            tarefa_intro, tarefa_meio_h2, tarefa_meio_lista, tarefa_conclusao, tarefa_contato,
+            tarefa_unificar, tarefa_revisar, tarefa_corrigir, tarefa_seo, tarefa_finalizar
         ],
         verbose=True
     )
