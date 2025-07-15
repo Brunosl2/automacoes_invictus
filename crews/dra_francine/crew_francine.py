@@ -37,19 +37,37 @@ def build_crew_francine(tema: str, palavra_chave: str):
         llm=llm,
     )
 
-    agente_meio = Agent(
-        role="Redatora de Conteúdo",
-        goal="Desenvolver o corpo do artigo com subtópicos claros, listas e orientações práticas",
-        backstory="Redatora especializada em saúde da pele e estética, com foco em conteúdo educativo e humanizado.",
+    agente_meio_h2 = Agent(
+        role="Criadora de Subtítulos Dermatológicos",
+        goal="Criar subtítulos H2 claros e objetivos sobre dermatologia clínica e estética",
+        backstory="Especialista em estruturar conteúdos sobre saúde da pele, envelhecimento e tratamentos estéticos.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_meio_lista = Agent(
+        role="Desenvolvedora de Conteúdo Dermatológico",
+        goal="Escrever parágrafos e listas detalhadas sobre cuidados dermatológicos e protocolos estéticos",
+        backstory="Profissional com experiência em dermatologia clínica e estética, focada em conteúdo educativo e humanizado.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
     )
 
     agente_conclusao = Agent(
-        role="Redatora de Conclusão",
-        goal="Fechar o artigo com resumo, confiança e chamada para ação",
-        backstory="Profissional com experiência em artigos médicos, responsável por conclusões suaves e CTA ético e engajador.",
+        role="Finalizadora de Conteúdos Dermatológicos",
+        goal="Encerrar o texto reforçando a importância do cuidado contínuo com a pele, sem chamada direta para ação",
+        backstory="Especialista em conclusões técnicas e institucionais para conteúdos médicos dermatológicos.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_contato = Agent(
+        role="Geradora de Assinatura Personalizada da Dra. Francine Costa",
+        goal="Adicionar uma assinatura final personalizada conforme o tema do artigo, seguindo o padrão institucional",
+        backstory="Responsável pela assinatura oficial da Dra. Francine, com foco em reforçar autoridade e confiança.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
@@ -102,28 +120,43 @@ def build_crew_francine(tema: str, palavra_chave: str):
 
     tarefa_intro = Task(
         description=f"""Escreva a introdução do artigo sobre '{tema}' com a palavra-chave '{palavra_chave}', em PT-BR.
-Use <p> e linguagem acolhedora, considerando o público de uma clínica dermatológica.
-Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
+    Use <p> e linguagem acolhedora, considerando o público de uma clínica dermatológica.
+    Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
         expected_output="Introdução em HTML com dois parágrafos, linguagem acessível e a palavra-chave.",
         agent=agente_intro
     )
 
-    tarefa_meio = Task(
-        description=f"""Escreva o corpo do artigo com subtítulos <h2>, parágrafos <p> e listas <ul><li>.
-Aborde orientações de cuidados, doenças, estética e protocolos comuns da dermatologia.
-Use este resumo da concorrência:\n\n{dados_concorrencia}""",
-        expected_output="HTML com ao menos 800 palavras, <h2>, <p>, <ul><li> e foco em clareza dermatológica.",
-        agent=agente_meio
+    tarefa_meio_h2 = Task(
+        description=f"""Crie subtítulos <h2> para o artigo sobre '{tema}', considerando o público de dermatologia clínica e estética.
+    Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
+        expected_output="Lista de subtítulos <h2> claros e relevantes.",
+        agent=agente_meio_h2
+    )
+
+    tarefa_meio_lista = Task(
+        description=f"""Desenvolva parágrafos <p> e listas <ul><li> com base nos subtítulos sobre '{tema}'.
+    Foque em orientação dermatológica, estética, prevenção e cuidados.
+    Use este resumo da concorrência:\n\n{dados_concorrencia}""",
+        expected_output="HTML com conteúdo detalhado e estruturado.",
+        agent=agente_meio_lista
     )
 
     tarefa_conclusao = Task(
-        description=f"""Escreva a conclusão do artigo, reforçando os cuidados com a pele e incentivando agendamento com a Dra. Francine Costa.
-Inclua, se fizer sentido, os seguintes links de contato em HTML:
-
-<p><a href="https://api.whatsapp.com/send?phone=5511966189853&text=Oi!%20Encontrei%20seu%20perfil%20no%20Google%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es" target="_blank">Fale com a Dra. Francine pelo WhatsApp</a></p>
-<p><a href="https://www.instagram.com/drafrancinecosta" target="_blank">Siga a Dra. Francine no Instagram</a></p>""",
-        expected_output="Parágrafos finais em <p> com CTA suave e links para WhatsApp e Instagram, se adequado.",
+        description=f"""Finalize o artigo reforçando a importância dos cuidados dermatológicos, sem chamada para ação direta.
+    Use este resumo da concorrência como referência:\n\n{dados_concorrencia}""",
+        expected_output="Conclusão suave e técnica em HTML, sem CTA.",
         agent=agente_conclusao
+    )
+
+    tarefa_contato = Task(
+        description="""Inclua ao final do HTML esta assinatura personalizada:
+
+    <p><strong>Agende sua consulta e aprenda como manter sua pele jovem, firme e luminosa após os 40!</strong><br>
+    <a href="https://api.whatsapp.com/send?phone=5511966189853&text=Oi!%20Encontrei%20seu%20perfil%20no%20Google%20e%20gostaria%20de%20mais%20informações" target="_blank">https://api.whatsapp.com/send?phone=5511966189853&text=Oi!%20Encontrei%20seu%20perfil%20no%20Google%20e%20gostaria%20de%20mais%20informações</a></p>
+
+    <p><strong>Dra Francine Costa — Dermatologista em Porto Alegre</strong></p>""",
+        expected_output="HTML final com assinatura personalizada da Dra. Francine Costa.",
+        agent=agente_contato
     )
 
 
@@ -160,13 +193,13 @@ Gere uma meta description persuasiva e natural. Baseie-se neste resumo:\n\n{dado
 
     crew_francine = Crew(
         agents=[
-            agente_intro, agente_meio, agente_conclusao, agente_unificador,
-            agente_revisor, agente_executor, agente_seo, agente_finalizador
+            agente_intro, agente_meio_h2, agente_meio_lista, agente_conclusao,
+            agente_contato, agente_unificador, agente_revisor, agente_executor,
+            agente_seo, agente_finalizador
         ],
         tasks=[
-            tarefa_intro, tarefa_meio, tarefa_conclusao,
-            tarefa_unificar, tarefa_revisar, tarefa_corrigir,
-            tarefa_seo, tarefa_finalizar
+            tarefa_intro, tarefa_meio_h2, tarefa_meio_lista, tarefa_conclusao, tarefa_contato,
+            tarefa_unificar, tarefa_revisar, tarefa_corrigir, tarefa_seo, tarefa_finalizar
         ],
         verbose=True
     )

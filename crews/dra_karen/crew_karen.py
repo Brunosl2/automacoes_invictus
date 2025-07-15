@@ -37,19 +37,37 @@ def build_crew_karen(tema: str, palavra_chave: str):
         llm=llm,
     )
 
-    agente_meio = Agent(
-        role="Redatora Médica Especializada",
-        goal="Desenvolver o corpo do post explicando doenças musculoesqueléticas, tratamentos regenerativos e técnicas de dor",
-        backstory="Profissional com experiência em conteúdos ortopédicos complexos, com domínio de termos técnicos e abordagem humanizada.",
+    agente_meio_h2 = Agent(
+        role="Criadora de Subtítulos Médicos",
+        goal="Elaborar subtítulos H2 claros e técnicos para artigos sobre ortopedia oncológica e dor",
+        backstory="Especialista em estruturar conteúdos médicos para facilitar a leitura e reforçar autoridade.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_meio_lista = Agent(
+        role="Desenvolvedora de Conteúdo Médico-Ortopédico",
+        goal="Desenvolver parágrafos explicativos e listas baseados nos subtítulos, com clareza e rigor científico",
+        backstory="Profissional especializada em conteúdos sobre dor, ortopedia e oncologia, com linguagem técnica acessível.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
     )
 
     agente_conclusao = Agent(
-        role="Finalizadora com Autoridade Clínica",
-        goal="Concluir com reforço da importância do diagnóstico precoce e convite ao agendamento",
-        backstory="Redatora médica com expertise em concluir artigos com ética, clareza e chamada para ação cuidadosa.",
+        role="Finalizadora de Artigos Médicos",
+        goal="Concluir o texto reforçando a importância do diagnóstico e cuidado, sem chamada para ação direta",
+        backstory="Especialista em encerramentos éticos e profissionais para textos de saúde.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_contato = Agent(
+        role="Geradora de Assinatura Médica Personalizada",
+        goal="Criar uma assinatura final personalizada conforme o tema do artigo, com foco em ortopedia e tratamentos",
+        backstory="Responsável por reforçar a presença institucional da Dra. Karen em todos os artigos, com tom informativo e profissional.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
@@ -107,17 +125,36 @@ def build_crew_karen(tema: str, palavra_chave: str):
             agent=agente_intro
         ),
         Task(
-            description=f"Desenvolva o conteúdo do post com <h2>, <p> e <ul><li>, explicando causas, diagnóstico e tratamentos em ortopedia oncológica, medicina regenerativa e intervenção em dor. Use este resumo:\n\n{dados_concorrencia}",
-            expected_output="Corpo do artigo com linguagem técnica acessível, HTML estruturado e 800+ palavras.",
-            agent=agente_meio
+            description=f"""Crie subtítulos <h2> para um artigo sobre '{tema}', com base nas tendências da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Lista de subtítulos <h2> médicos adequados ao tema.",
+            agent=agente_meio_h2
         ),
         Task(
-            description="""Finalize o artigo com reforço sobre a importância do diagnóstico precoce e convite ao agendamento com a Dra. Karen Voltan.
-        Inclua, se fizer sentido, o seguinte link de agendamento em HTML:
+            description=f"""Desenvolva parágrafos <p> e listas <ul><li> com base nos subtítulos sobre '{tema}', abordando causas, diagnóstico e tratamentos.
+Use linguagem técnica acessível, baseando-se neste resumo:\n\n{dados_concorrencia}""",
+            expected_output="HTML explicativo e detalhado conforme os subtítulos.",
+            agent=agente_meio_lista
+        ),
 
-        <p><a href="https://drakarenvoltan.com/agendamento" target="_blank">Clique aqui para agendar uma consulta com a Dra. Karen Voltan</a></p>""",
-            expected_output="Conclusão em <p> com CTA sutil e link para agendamento, se adequado.",
+        Task(
+            description=f"""Finalize o artigo reforçando a importância do diagnóstico precoce e do cuidado contínuo, sem incluir chamada para ação direta.
+Use este resumo como referência:\n\n{dados_concorrencia}""",
+            expected_output="Conclusão em HTML com tom técnico e humanizado, sem CTA.",
             agent=agente_conclusao
+        ),
+
+        Task(
+            description="""Adicione no final do HTML a seguinte assinatura personalizada conforme o tema do artigo:
+
+<p><strong>Onde realizar o tratamento em São Paulo</strong><br>
+Stem Ortopedia Biológica – Av. Brasil, 299, Jardim América – www.stemortopedia.com<br>
+Hospital Israelita Albert Einstein – Unidade Klabin – Av. Ricardo Jafet, 1600 – www.einstein.br</p>
+
+<p><strong>Sofre com [resumo do problema]?</strong><br>
+Clique aqui agende uma avaliação com a Dra. Karen Voltan e descubra o tratamento mais indicado para você.<br>
+<a href="https://drakarenvoltan.com/agendamento" target="_blank">https://drakarenvoltan.com/agendamento</a></p>""",
+            expected_output="HTML com assinatura final personalizada da Dra. Karen Voltan.",
+            agent=agente_contato
         ),
         Task(
             description="Unifique todo o conteúdo em HTML limpo, organizado e pronto para WordPress.",
@@ -148,8 +185,9 @@ def build_crew_karen(tema: str, palavra_chave: str):
 
     crew = Crew(
         agents=[
-            agente_intro, agente_meio, agente_conclusao, agente_unificador,
-            agente_revisor, agente_executor, agente_seo, agente_finalizador
+            agente_intro, agente_meio_h2, agente_meio_lista, agente_conclusao,
+            agente_contato, agente_unificador, agente_revisor, agente_executor,
+            agente_seo, agente_finalizador
         ],
         tasks=tarefas,
         verbose=True

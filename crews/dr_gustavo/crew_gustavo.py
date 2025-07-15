@@ -37,19 +37,37 @@ def build_crew_gustavo(tema: str, palavra_chave: str):
         llm=llm,
     )
 
-    agente_meio = Agent(
-        role="Redator Científico Estético",
-        goal="Desenvolver o corpo do post com subtítulos, listas e explicações práticas sobre tratamentos dermatológicos",
-        backstory="Jornalista médico especializado em estética e laser, com foco em clareza, autoridade e conteúdo útil.",
+    agente_meio_h2 = Agent(
+        role="Criador de Subtítulos Dermatológicos",
+        goal="Criar subtítulos H2 técnicos e claros para artigos sobre tratamentos dermatológicos modernos",
+        backstory="Especialista em estruturar conteúdos sobre tecnologia dermatológica, estética e saúde da pele.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_meio_lista = Agent(
+        role="Desenvolvedor de Conteúdo Dermatológico",
+        goal="Escrever parágrafos explicativos e listas sobre dermatologia moderna, baseando-se em subtítulos",
+        backstory="Profissional especializado em conteúdos sobre rosácea, melasma, laser, rejuvenescimento e cuidados capilares.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
     )
 
     agente_conclusao = Agent(
-        role="Finalizador com CTA",
-        goal="Concluir o post com reforço do valor da clínica e incentivo ao agendamento",
-        backstory="Redator focado em gerar confiança, valorizando tecnologia, segurança e naturalidade nos tratamentos.",
+        role="Finalizador de Conteúdos Dermatológicos",
+        goal="Encerrar o texto reforçando a importância do cuidado dermatológico, sem chamada para ação direta",
+        backstory="Especialista em conclusões técnicas para conteúdos médicos, mantendo tom profissional e informativo.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_contato = Agent(
+        role="Gerador de Assinatura Personalizada do Dr. Gustavo Thá",
+        goal="Criar assinatura final personalizada conforme o tema do artigo, mantendo o padrão institucional e reforçando a autoridade",
+        backstory="Responsável pela assinatura oficial dos artigos do Dr. Gustavo, garantindo coerência e presença institucional.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
@@ -118,17 +136,41 @@ def build_crew_gustavo(tema: str, palavra_chave: str):
             agent=agente_intro
         ),
         Task(
-            description=f"Desenvolva o corpo do artigo com subtítulos <h2>, parágrafos <p> e listas <ul><li>, explicando tratamentos modernos, causas, dicas e resultados. Baseie-se na concorrência:\n\n{dados_concorrencia}",
-            expected_output="HTML com 800+ palavras explicando tratamentos, benefícios e cuidados.",
-            agent=agente_meio
+            description=f"""Crie subtítulos <h2> para um artigo sobre '{tema}', com base neste resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Lista de subtítulos <h2> relacionados ao tema oncológico.",
+            agent=agente_meio_h2
         ),
         Task(
-            description="""Conclua o post reforçando a confiança na clínica THÁ e convidando para uma avaliação. Use CTA suave.
-        Inclua, se fizer sentido, o seguinte link de Instagram em HTML:
+            description=f"""Desenvolva parágrafos <p> e listas <ul><li> com base nos subtítulos sobre '{tema}', abordando diagnósticos e tratamentos.
+Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="HTML explicativo e detalhado conforme os subtítulos.",
+            agent=agente_meio_lista
+        ),
 
-        <p><a href="https://www.instagram.com/clinicathadermatologia/" target="_blank">Conheça mais sobre a Clínica THÁ no Instagram</a></p>""",
-            expected_output="HTML com parágrafo final e chamada para ação confiável, com link para Instagram, se adequado.",
+        Task(
+            description=f"""Finalize o artigo reforçando a importância do diagnóstico precoce e do acompanhamento médico, sem CTA.
+Use este resumo como referência:\n\n{dados_concorrencia}""",
+            expected_output="Conclusão técnica em HTML, sem chamada direta para ação.",
             agent=agente_conclusao
+        ),
+
+        Task(
+            description="""Adicione ao final do HTML a seguinte assinatura:
+
+<p><strong>👉 Clique em saiba mais e agende sua consulta com o Dr. Guilherme Gadens!</strong><br>
+<a href="https://api.whatsapp.com/send?phone=5541987877858&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">https://api.whatsapp.com/send?phone=5541987877858&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações.</a></p>
+
+<p><strong>Dr. Guilherme Gadens — Dermatologista especializado em Cirurgia de Mohs e Dermatoscopia Digital em Curitiba</strong></p>""",
+            expected_output="HTML com assinatura personalizada do Dr. Guilherme.",
+            agent=agente_contato
+        ),
+
+        Task(
+            description=f"""Crie um FAQ em HTML relacionado ao tema '{tema}', contendo pelo menos 3 perguntas e respostas objetivas.
+Use linguagem clara e técnica, voltada para pacientes em busca de informações sobre diagnóstico, prevenção ou tratamento.
+Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Seção FAQ em HTML com perguntas <h3> e respostas <p>.",
+            agent=agente_faq
         ),
         Task(
             description="Una introdução, corpo e conclusão em um HTML limpo, coeso e com formatação adequada ao WordPress.",
@@ -165,8 +207,9 @@ def build_crew_gustavo(tema: str, palavra_chave: str):
 
     crew = Crew(
         agents=[
-            agente_intro, agente_meio, agente_conclusao, agente_unificador,
-            agente_revisor, agente_executor, agente_seo, agente_finalizador
+            agente_intro, agente_meio_h2, agente_meio_lista, agente_conclusao,
+            agente_contato, agente_faq, agente_unificador, agente_revisor,
+            agente_executor, agente_seo, agente_finalizador
         ],
         tasks=tarefas,
         verbose=True

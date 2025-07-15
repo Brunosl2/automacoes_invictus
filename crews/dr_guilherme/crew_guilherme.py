@@ -37,19 +37,46 @@ def build_crew_guilherme(tema: str, palavra_chave: str):
         llm=llm,
     )
 
-    agente_meio = Agent(
-        role="Redator de Conteúdo Técnico",
-        goal="Descrever exames, tecnologias e abordagens cirúrgicas com clareza e base científica",
-        backstory="Profissional com experiência em conteúdo médico de alta complexidade, com foco em câncer de pele e procedimentos avançados como cirurgia de Mohs.",
+    agente_meio_h2 = Agent(
+        role="Criador de Subtítulos Médicos",
+        goal="Criar subtítulos H2 claros e técnicos sobre câncer de pele, diagnóstico e tratamentos",
+        backstory="Especialista em estruturar conteúdos médicos oncológicos com foco em clareza e autoridade.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_meio_lista = Agent(
+        role="Desenvolvedor de Conteúdo Médico",
+        goal="Escrever parágrafos explicativos e listas baseados nos subtítulos, abordando exames e tratamentos oncológicos",
+        backstory="Profissional especializado em conteúdos sobre dermatologia oncológica e cirurgia dermatológica.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
     )
 
     agente_conclusao = Agent(
-        role="Encerramento com Autoridade",
-        goal="Concluir com reforço da importância da detecção precoce e incentivo à consulta com o Dr. Guilherme",
-        backstory="Jornalista médico com habilidade em gerar confiança e orientar o paciente para a tomada de decisão.",
+        role="Finalizador de Conteúdos Médicos",
+        goal="Encerrar o artigo reforçando a importância do diagnóstico precoce, sem chamada para ação direta",
+        backstory="Especialista em conclusões técnicas para artigos médicos, mantendo tom profissional e informativo.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_contato = Agent(
+        role="Gerador de Assinatura do Dr. Guilherme Gadens",
+        goal="Criar assinatura final personalizada conforme o tema do artigo, mantendo o padrão institucional",
+        backstory="Responsável por garantir a presença institucional do Dr. Guilherme em todos os artigos, com tom técnico e acolhedor.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_faq = Agent(
+        role="Criador de FAQ Médico",
+        goal="Gerar um FAQ relevante com perguntas e respostas sobre o tema do artigo, com foco em dúvidas frequentes de pacientes",
+        backstory="Especialista em gerar conteúdos de apoio informativo, com foco em esclarecimento e prevenção em dermatologia oncológica.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
@@ -107,19 +134,41 @@ def build_crew_guilherme(tema: str, palavra_chave: str):
             agent=agente_intro
         ),
         Task(
-            description="Desenvolva o corpo do artigo em HTML usando <h2>, <p> e listas <ul><li>. Explique de forma clara e didática os exames de dermatoscopia digital, mapeamento corporal e cirurgia de Mohs. Utilize linguagem técnica e acessível, com foco em orientar o leitor.",
-            expected_output="Corpo do artigo em HTML, com 400+ palavras, estruturado em subtítulos e parágrafos claros.",
-            agent=agente_meio
+            description=f"""Crie subtítulos <h2> para um artigo sobre '{tema}', com base neste resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Lista de subtítulos <h2> relacionados ao tema oncológico.",
+            agent=agente_meio_h2
+        ),
+        Task(
+            description=f"""Desenvolva parágrafos <p> e listas <ul><li> com base nos subtítulos sobre '{tema}', abordando diagnósticos e tratamentos.
+Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="HTML explicativo e detalhado conforme os subtítulos.",
+            agent=agente_meio_lista
         ),
 
         Task(
-            description="""Conclua o post com reforço sobre a importância de avaliar lesões precocemente e convite à consulta com o Dr. Guilherme Gadens.
-        Inclua, se fizer sentido, os seguintes links de contato em HTML:
-
-        <p><a href="https://api.whatsapp.com/send?phone=5541987877858&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">Agende sua consulta pelo WhatsApp</a></p>
-        <p><a href="https://www.instagram.com/gadensguilherme/" target="_blank">Siga o Dr. Guilherme no Instagram</a></p>""",
-            expected_output="Conclusão com CTA discreto e profissional, incluindo links para WhatsApp e Instagram, se adequado.",
+            description=f"""Finalize o artigo reforçando a importância do diagnóstico precoce e do acompanhamento médico, sem CTA.
+Use este resumo como referência:\n\n{dados_concorrencia}""",
+            expected_output="Conclusão técnica em HTML, sem chamada direta para ação.",
             agent=agente_conclusao
+        ),
+
+        Task(
+            description="""Adicione ao final do HTML a seguinte assinatura:
+
+<p><strong>👉 Clique em saiba mais e agende sua consulta com o Dr. Guilherme Gadens!</strong><br>
+<a href="https://api.whatsapp.com/send?phone=5541987877858&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">https://api.whatsapp.com/send?phone=5541987877858&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações.</a></p>
+
+<p><strong>Dr. Guilherme Gadens — Dermatologista especializado em Cirurgia de Mohs e Dermatoscopia Digital em Curitiba</strong></p>""",
+            expected_output="HTML com assinatura personalizada do Dr. Guilherme.",
+            agent=agente_contato
+        ),
+
+        Task(
+            description=f"""Crie um FAQ em HTML relacionado ao tema '{tema}', contendo pelo menos 3 perguntas e respostas objetivas.
+Use linguagem clara e técnica, voltada para pacientes em busca de informações sobre diagnóstico, prevenção ou tratamento.
+Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Seção FAQ em HTML com perguntas <h3> e respostas <p>.",
+            agent=agente_faq
         ),
         Task(
             description="Una todas as partes em HTML limpo e formatado para WordPress.",
@@ -151,8 +200,9 @@ def build_crew_guilherme(tema: str, palavra_chave: str):
 
     crew = Crew(
         agents=[
-            agente_intro, agente_meio, agente_conclusao, agente_unificador,
-            agente_revisor, agente_executor, agente_seo, agente_finalizador
+            agente_intro, agente_meio_h2, agente_meio_lista, agente_conclusao,
+            agente_contato, agente_faq, agente_unificador, agente_revisor,
+            agente_executor, agente_seo, agente_finalizador
         ],
         tasks=tarefas,
         verbose=True

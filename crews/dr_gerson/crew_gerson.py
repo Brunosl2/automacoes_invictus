@@ -37,19 +37,37 @@ def build_crew_gerson(tema: str, palavra_chave: str):
         llm=llm,
     )
 
-    agente_meio = Agent(
-        role="Redator Técnico de Conteúdo Feminino",
-        goal="Explicar o funcionamento, indicações e benefícios de procedimentos ginecológicos ou nutrológicos",
-        backstory="Redator com conhecimento em saúde da mulher, capaz de comunicar com clareza e empatia conteúdos técnicos como laser íntimo, nutrologia ou obstetrícia.",
+    agente_meio_h2 = Agent(
+        role="Criador de Subtítulos sobre Saúde Feminina",
+        goal="Criar subtítulos H2 claros e acolhedores para artigos sobre saúde íntima e ginecologia",
+        backstory="Especialista em estruturar conteúdos médicos femininos com foco em clareza e empatia.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_meio_lista = Agent(
+        role="Desenvolvedor de Conteúdo para Saúde Feminina",
+        goal="Escrever parágrafos explicativos e listas baseados nos subtítulos, sobre saúde da mulher e bem-estar",
+        backstory="Profissional especializado em conteúdos de ginecologia e nutrologia, com abordagem acolhedora e técnica.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
     )
 
     agente_conclusao = Agent(
-        role="Finalizador com CTA acolhedor",
-        goal="Concluir o artigo reforçando o cuidado com a mulher e convidando à consulta",
-        backstory="Profissional com experiência em gerar confiança e direcionar pacientes com empatia e profissionalismo.",
+        role="Finalizador de Artigos sobre Saúde Feminina",
+        goal="Encerrar o texto reforçando o cuidado com a saúde da mulher, sem chamada para ação direta",
+        backstory="Especialista em conclusões institucionais e conteúdos médicos femininos.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_contato = Agent(
+        role="Gerador de Assinatura Personalizada do Dr. Gerson",
+        goal="Adicionar assinatura final personalizada conforme o tema do artigo, mantendo o padrão institucional",
+        backstory="Responsável por reforçar a presença institucional do Dr. Gerson em todos os artigos, com tom acolhedor e profissional.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
@@ -107,18 +125,35 @@ def build_crew_gerson(tema: str, palavra_chave: str):
             agent=agente_intro
         ),
         Task(
-            description=f"Desenvolva o corpo do post com <h2>, <p> e listas <ul><li>. Explique de forma acessível o funcionamento de tecnologias como Laser Íntimo CO₂, nutrologia ou obstetrícia personalizada. Use como base o seguinte resumo da concorrência:\n\n{dados_concorrencia}",
-            expected_output="Texto com 800+ palavras, estruturado e informativo.",
-            agent=agente_meio
+            description=f"""Crie subtítulos <h2> para um artigo sobre '{tema}', com base neste resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Lista de subtítulos <h2> relacionados à saúde íntima e bem-estar feminino.",
+            agent=agente_meio_h2
         ),
         Task(
-            description="""Escreva a conclusão do post com chamada para ação (CTA) acolhedora e reforço da confiança no Dr. Gerson.
-        Inclua, se fizer sentido, os seguintes links de contato em HTML:
+            description=f"""Desenvolva parágrafos <p> e listas <ul><li> com base nos subtítulos sobre '{tema}'.
+Explique os tratamentos e cuidados de forma clara e acolhedora.
+Use este resumo como referência:\n\n{dados_concorrencia}""",
+            expected_output="HTML explicativo e empático conforme os subtítulos.",
+            agent=agente_meio_lista
+        ),
 
-        <p><a href="https://api.whatsapp.com/send?phone=5541999380202&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">Agende sua consulta pelo WhatsApp</a></p>
-        <p><a href="https://www.instagram.com/dr.gersonrighetto/" target="_blank">Siga o Dr. Gerson no Instagram</a></p>""",
-            expected_output="Parágrafo final com CTA para agendamento de consulta, incluindo links para WhatsApp e Instagram, se adequado.",
+        Task(
+            description=f"""Finalize o artigo reforçando a importância do cuidado com a saúde da mulher e a confiança no atendimento, sem incluir chamada para ação direta.
+Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Conclusão em HTML acolhedora, sem CTA direto.",
             agent=agente_conclusao
+        ),
+
+        Task(
+            description="""Inclua no final do HTML a seguinte assinatura:
+
+<p><strong>Clique aqui para agendar uma avaliação pelo WhatsApp</strong><br>
+<a href="https://api.whatsapp.com/send?phone=5541999380202&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">https://api.whatsapp.com/send?phone=5541999380202&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações.</a></p>
+
+<p><strong>Dr. Gerson Righetto Junior — Ginecologista e Obstetra</strong><br>
+Av. Sete de Setembro, 4214 - cj 1707 - Batel, Curitiba – PR</p>""",
+            expected_output="HTML com assinatura personalizada do Dr. Gerson Righetto Junior.",
+            agent=agente_contato
         ),
         Task(
             description="Unifique o conteúdo em HTML limpo, legível e com estrutura adequada para WordPress.",
@@ -149,8 +184,9 @@ def build_crew_gerson(tema: str, palavra_chave: str):
 
     crew = Crew(
         agents=[
-            agente_intro, agente_meio, agente_conclusao, agente_unificador,
-            agente_revisor, agente_executor, agente_seo, agente_finalizador
+            agente_intro, agente_meio_h2, agente_meio_lista, agente_conclusao,
+            agente_contato, agente_unificador, agente_revisor, agente_executor,
+            agente_seo, agente_finalizador
         ],
         tasks=tarefas,
         verbose=True

@@ -37,19 +37,37 @@ def build_crew_nucleorural(tema: str, palavra_chave: str):
         llm=llm,
     )
 
-    agente_meio = Agent(
-        role="Especialista em Conteúdo Agro",
-        goal="Desenvolver o corpo do post com explicações claras e soluções práticas",
-        backstory="Engenheiro agrônomo/redator experiente no campo, focado em suplementação, sanidade animal e produtividade no rebanho.",
+    agente_meio_h2 = Agent(
+        role="Criador de Subtítulos Agropecuários",
+        goal="Criar subtítulos H2 diretos e técnicos para conteúdos voltados ao produtor rural",
+        backstory="Especialista em conteúdos agro, com foco em resultados práticos e clareza técnica.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_meio_lista = Agent(
+        role="Desenvolvedor de Conteúdo Agropecuário",
+        goal="Desenvolver listas e parágrafos baseados nos subtítulos, explicando soluções para sanidade animal e produtividade",
+        backstory="Profissional especializado em conteúdos para o campo, suplementação e manejo zootécnico.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
     )
 
     agente_conclusao = Agent(
-        role="Fechamento com CTA Agro",
-        goal="Finalizar com reforço nos benefícios práticos e chamada clara para contato",
-        backstory="Consultor técnico em nutrição animal, com experiência em conversão de leitores em clientes por meio de CTAs diretos.",
+        role="Finalizador de Conteúdos Técnicos Rurais",
+        goal="Concluir o texto reforçando a importância da solução apresentada, sem chamada direta para ação",
+        backstory="Especialista em fechamentos institucionais para conteúdos do setor agropecuário.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_contato = Agent(
+        role="Gerador de Assinatura Institucional Núcleo Rural",
+        goal="Adicionar assinatura final personalizada conforme o tema do artigo, seguindo o padrão institucional da Núcleo Rural",
+        backstory="Responsável por reforçar a presença institucional da Núcleo Rural com assinatura clara e objetiva.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
@@ -107,14 +125,32 @@ def build_crew_nucleorural(tema: str, palavra_chave: str):
             agent=agente_intro
         ),
         Task(
-            description=f"Desenvolva o corpo do conteúdo com subtítulos <h2>, parágrafos <p> e listas <ul><li>. Use linguagem técnica e mostre como resolver o problema com soluções da Núcleo Rural. Baseie-se neste resumo:\n\n{dados_concorrencia}",
-            expected_output="Texto com 800+ palavras explicando os benefícios e funcionamento dos produtos, com foco em resultado prático.",
-            agent=agente_meio
+            description=f"""Crie subtítulos <h2> para um artigo agropecuário sobre '{tema}', considerando este resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Lista de subtítulos <h2> técnicos e objetivos.",
+            agent=agente_meio_h2
         ),
         Task(
-            description="Finalize o conteúdo com CTA direto e reforço dos ganhos para o produtor. Mantenha o tom objetivo.",
-            expected_output="Parágrafo final em <p> com chamada para contato ou orçamento.",
+            description=f"""Desenvolva parágrafos <p> e listas <ul><li> baseados nos subtítulos, explicando o tema '{tema}'.
+Use linguagem técnica e destaque as soluções práticas da Núcleo Rural.
+Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="HTML técnico e direto com foco no produtor rural.",
+            agent=agente_meio_lista
+        ),
+
+        Task(
+            description=f"""Finalize o artigo reforçando os benefícios e o impacto das soluções apresentadas, sem incluir chamada direta para ação.
+Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Conclusão técnica em HTML, sem CTA.",
             agent=agente_conclusao
+        ),
+
+        Task(
+            description="""Inclua ao final do HTML esta assinatura:
+
+<p><strong>Clique aqui fale com a equipe da Núcleo Rural e transforme o potencial dos seus bezerros em resultados reais!</strong><br>
+<a href="https://api.whatsapp.com/send?phone=551735139264&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">https://api.whatsapp.com/send?phone=551735139264&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações.</a></p>""",
+            expected_output="HTML final com assinatura personalizada da Núcleo Rural.",
+            agent=agente_contato
         ),
         Task(
             description="Unifique as partes em HTML técnico e limpo, com formatação adequada para WordPress.",
@@ -145,8 +181,9 @@ def build_crew_nucleorural(tema: str, palavra_chave: str):
 
     crew = Crew(
         agents=[
-            agente_intro, agente_meio, agente_conclusao, agente_unificador,
-            agente_revisor, agente_executor, agente_seo, agente_finalizador
+            agente_intro, agente_meio_h2, agente_meio_lista, agente_conclusao,
+            agente_contato, agente_unificador, agente_revisor, agente_executor,
+            agente_seo, agente_finalizador
         ],
         tasks=tarefas,
         verbose=True
