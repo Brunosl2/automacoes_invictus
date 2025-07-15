@@ -37,19 +37,37 @@ def build_crew_tatiana(tema: str, palavra_chave: str):
         llm=llm,
     )
 
-    agente_meio = Agent(
-        role="Redatora de Conteúdo Técnico",
-        goal="Escrever o corpo do artigo com linguagem clara, explicações científicas e recomendações práticas sobre saúde das unhas",
-        backstory="Especialista em conteúdo médico, com foco em doenças e cuidados com unhas. Conhece bem os termos técnicos e sabe explicar com empatia.",
+    agente_meio_h2 = Agent(
+        role="Criadora de Subtítulos sobre Saúde das Unhas",
+        goal="Criar subtítulos H2 educativos e relevantes para o tema",
+        backstory="Especialista em conteúdo médico para público leigo, com foco em estrutura e clareza.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_meio_lista = Agent(
+        role="Desenvolvedora de Conteúdo sobre Saúde das Unhas",
+        goal="Escrever parágrafos explicativos e listas com base nos subtítulos, com linguagem clara e técnica",
+        backstory="Profissional especializada em educação médica e prevenção, com foco em clareza e empatia.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
     )
 
     agente_conclusao = Agent(
-        role="Redatora de Encerramento",
-        goal="Finalizar o artigo reforçando o cuidado com as unhas e incentivando consulta com a Dra. Tatiana Gabbi",
-        backstory="Redatora focada em conteúdos médicos com abordagem humanizada e chamada para ação discreta e eficaz.",
+        role="Finalizadora do Conteúdo Médico",
+        goal="Concluir o texto reforçando os cuidados com as unhas, sem chamada para ação",
+        backstory="Especialista em encerramentos sutis e institucionais, mantendo o tom técnico e acolhedor.",
+        verbose=True,
+        allow_delegation=False,
+        llm=llm,
+    )
+
+    agente_contato = Agent(
+        role="Responsável pela Assinatura da Dra. Tatiana Gabbi",
+        goal="Adicionar assinatura padrão e contatos da Dra. Tatiana ao final do HTML",
+        backstory="Responsável por garantir a presença do contato oficial da Dra. Tatiana em todos os conteúdos.",
         verbose=True,
         allow_delegation=False,
         llm=llm,
@@ -107,22 +125,40 @@ Fale sobre a importância da saúde das unhas e introduza o tema com empatia. Us
         agent=agente_intro
     )
 
-    tarefa_meio = Task(
-        description=f"""Desenvolva o conteúdo com subtítulos <h2>, parágrafos <p> e listas <ul><li>.
-Aborde causas, sintomas, hábitos e dicas preventivas ligadas à saúde das unhas, com precisão e clareza. Use este resumo da concorrência:\n\n{dados_concorrencia}""",
-        expected_output="HTML com pelo menos 800 palavras, estruturado e educativo.",
-        agent=agente_meio
+    tarefa_meio_h2 = Task(
+        description=f"""Crie subtítulos <h2> para um artigo sobre '{tema}' com base neste resumo da concorrência:\n\n{dados_concorrencia}""",
+        expected_output="Lista de subtítulos <h2> adequados ao tema.",
+        agent=agente_meio_h2
+    )
+
+    tarefa_meio_lista = Task(
+        description=f"""Com base nos subtítulos fornecidos, desenvolva parágrafos <p> e listas <ul><li> sobre '{tema}'.
+Aborde causas, sintomas, hábitos e dicas preventivas. Use este resumo da concorrência:\n\n{dados_concorrencia}""",
+        expected_output="HTML com parágrafos e listas explicativos sobre saúde das unhas.",
+        agent=agente_meio_lista
     )
 
     tarefa_conclusao = Task(
-    description="""Escreva a conclusão reforçando os cuidados com as unhas e convidando o leitor a procurar avaliação com a Dra. Tatiana Gabbi.
-Inclua, se fizer sentido, os seguintes links de contato em HTML:
+        description=f"""Conclua o artigo reforçando a importância dos cuidados com as unhas.
+Não inclua chamada para ação.
+Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
+        expected_output="Conclusão em HTML, com parágrafos finais sem CTA.",
+        agent=agente_conclusao
+    )
 
-<p><a href="https://api.whatsapp.com/send?phone=5511991578420&text=Oi!%20Encontrei%20seu%20contato%20no%20site%20e%20gostaria%20de%20mais%20informações" target="_blank">Fale com a Dra. Tatiana pelo WhatsApp</a></p>
-<p><a href="https://www.instagram.com/dratatianagabbi/" target="_blank">Siga a Dra. Tatiana no Instagram</a></p>""",
-    expected_output="Parágrafos finais com CTA suave e links para WhatsApp e Instagram, se adequado.",
-    agent=agente_conclusao
-)
+    tarefa_contato = Task(
+        description="""Inclua ao final do HTML a seguinte assinatura:
+
+<p>Clique aqui agende sua consulta via WhatsApp e receba avaliação especializada:<br>
+<a href="https://api.whatsapp.com/send?phone=5511991578420&text=Oi!%20Encontrei%20seu%20contato%20no%20site%20e%20gostaria%20de%20mais%20informações" target="_blank">Fale com a Dra. Tatiana pelo WhatsApp</a></p>
+
+<p>Siga o Instagram: @dratatianagabbi para acompanhar conteúdos exclusivos sobre saúde das unhas e cuidados com a pele no inverno.<br>
+<a href="https://www.instagram.com/dratatianagabbi/" target="_blank">Instagram Dra. Tatiana Gabbi</a></p>
+
+<p><strong>Dra. Tatiana Gabbi</strong> — Médica Dermatologista especializada em doenças das unhas em São Paulo</p>""",
+        expected_output="HTML final com assinatura e contatos oficiais da Dra. Tatiana Gabbi.",
+        agent=agente_contato
+    )
 
 
     tarefa_unificar = Task(
@@ -157,13 +193,13 @@ Inclua, se fizer sentido, os seguintes links de contato em HTML:
 
     crew_tatiana = Crew(
         agents=[
-            agente_intro, agente_meio, agente_conclusao, agente_unificador,
-            agente_revisor, agente_executor, agente_seo, agente_finalizador
+            agente_intro, agente_meio_h2, agente_meio_lista, agente_conclusao,
+            agente_contato, agente_unificador, agente_revisor, agente_executor,
+            agente_seo, agente_finalizador
         ],
         tasks=[
-            tarefa_intro, tarefa_meio, tarefa_conclusao,
-            tarefa_unificar, tarefa_revisar, tarefa_corrigir,
-            tarefa_seo, tarefa_finalizar
+            tarefa_intro, tarefa_meio_h2, tarefa_meio_lista, tarefa_conclusao, tarefa_contato,
+            tarefa_unificar, tarefa_revisar, tarefa_corrigir, tarefa_seo, tarefa_finalizar
         ],
         verbose=True
     )
