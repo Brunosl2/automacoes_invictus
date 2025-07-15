@@ -126,7 +126,7 @@ Fale sobre a importância da saúde das unhas e introduza o tema com empatia. Us
     )
 
     tarefa_meio_h2 = Task(
-        description=f"""Crie subtítulos <h2> para um artigo sobre '{tema}' com base neste resumo da concorrência:\n\n{dados_concorrencia}""",
+        description=f"""Crie pelo menos 4 subtítulos <h2> com no mínimo 70 palavras em cada para um artigo sobre '{tema}' com base neste resumo da concorrência:\n\n{dados_concorrencia}""",
         expected_output="Lista de subtítulos <h2> adequados ao tema.",
         agent=agente_meio_h2
     )
@@ -163,7 +163,7 @@ Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
 
     tarefa_unificar = Task(
         description="Una as partes em HTML formatado para WordPress com fluidez e linguagem coerente.",
-        expected_output="HTML único, limpo e com >1000 palavras.",
+        expected_output="HTML único e limpo",
         agent=agente_unificador
     )
 

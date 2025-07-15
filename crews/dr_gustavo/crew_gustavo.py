@@ -208,7 +208,7 @@ Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
     crew = Crew(
         agents=[
             agente_intro, agente_meio_h2, agente_meio_lista, agente_conclusao,
-            agente_contato, agente_faq, agente_unificador, agente_revisor,
+            agente_contato, agente_unificador, agente_revisor,
             agente_executor, agente_seo, agente_finalizador
         ],
         tasks=tarefas,
