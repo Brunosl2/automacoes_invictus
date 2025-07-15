@@ -136,41 +136,34 @@ def build_crew_gustavo(tema: str, palavra_chave: str):
             agent=agente_intro
         ),
         Task(
-            description=f"""Crie subtítulos <h2> para um artigo sobre '{tema}', com base neste resumo da concorrência:\n\n{dados_concorrencia}""",
-            expected_output="Lista de subtítulos <h2> relacionados ao tema oncológico.",
+            description=f"""Crie subtítulos <h2> para um artigo sobre '{tema}', considerando as tendências observadas na concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Lista de subtítulos <h2> relevantes ao tema e ao público dermatológico.",
             agent=agente_meio_h2
         ),
         Task(
-            description=f"""Desenvolva parágrafos <p> e listas <ul><li> com base nos subtítulos sobre '{tema}', abordando diagnósticos e tratamentos.
+            description=f"""Desenvolva parágrafos <p> e listas <ul><li> baseados nos subtítulos sobre '{tema}'.
+Use linguagem técnica acessível e destaque as tecnologias e abordagens modernas.
 Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
-            expected_output="HTML explicativo e detalhado conforme os subtítulos.",
+            expected_output="HTML detalhado e técnico conforme os subtítulos.",
             agent=agente_meio_lista
         ),
 
         Task(
-            description=f"""Finalize o artigo reforçando a importância do diagnóstico precoce e do acompanhamento médico, sem CTA.
-Use este resumo como referência:\n\n{dados_concorrencia}""",
-            expected_output="Conclusão técnica em HTML, sem chamada direta para ação.",
+            description=f"""Finalize o artigo reforçando a importância da avaliação dermatológica personalizada e o uso de tecnologias modernas, sem incluir chamada para ação direta.
+Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
+            expected_output="Conclusão profissional em HTML, sem CTA.",
             agent=agente_conclusao
         ),
 
         Task(
-            description="""Adicione ao final do HTML a seguinte assinatura:
+            description="""Inclua no final do HTML a assinatura personalizada conforme o tema, mantendo este formato:
 
-<p><strong>👉 Clique em saiba mais e agende sua consulta com o Dr. Guilherme Gadens!</strong><br>
-<a href="https://api.whatsapp.com/send?phone=5541987877858&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">https://api.whatsapp.com/send?phone=5541987877858&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações.</a></p>
+<p><strong>👉 Clique em saiba mais e agende sua consulta com o Dr. Gustavo Thá!</strong><br>
+<a href="https://api.whatsapp.com/send?phone=5541991076623&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">https://api.whatsapp.com/send?phone=5541991076623&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações.</a></p>
 
-<p><strong>Dr. Guilherme Gadens — Dermatologista especializado em Cirurgia de Mohs e Dermatoscopia Digital em Curitiba</strong></p>""",
-            expected_output="HTML com assinatura personalizada do Dr. Guilherme.",
+<p><strong>Dr. Gustavo Thá — Dermatologista, especialista em tecnologias modernas de cuidado com a pele e cabelo em Curitiba</strong></p>""",
+            expected_output="HTML com assinatura personalizada do Dr. Gustavo Thá.",
             agent=agente_contato
-        ),
-
-        Task(
-            description=f"""Crie um FAQ em HTML relacionado ao tema '{tema}', contendo pelo menos 3 perguntas e respostas objetivas.
-Use linguagem clara e técnica, voltada para pacientes em busca de informações sobre diagnóstico, prevenção ou tratamento.
-Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
-            expected_output="Seção FAQ em HTML com perguntas <h3> e respostas <p>.",
-            agent=agente_faq
         ),
         Task(
             description="Una introdução, corpo e conclusão em um HTML limpo, coeso e com formatação adequada ao WordPress.",
