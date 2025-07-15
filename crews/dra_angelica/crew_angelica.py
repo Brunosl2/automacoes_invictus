@@ -183,8 +183,8 @@ def build_crew_angelica(tema: str, palavra_chave: str):
 
     crew = Crew(
         agents=[
-            agente_intro, agente_meio, agente_conclusao, agente_unificador,
-            agente_revisor, agente_executor, agente_seo, agente_finalizador
+            agente_intro, agente_meio_h2 , agente_meio_lista, agente_conclusao, agente_contato, agente_unificador,
+            agente_revisor, agente_executor, agente_seo, agente_finalizador,
         ],
         tasks=tarefas,
         verbose=True
