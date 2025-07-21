@@ -25,6 +25,7 @@ def executar_crew_invictus(tema: str = Query(...), palavra_chave: str = Query(..
     return JSONResponse(content=resultado.model_dump())
 
 @app.get("/dra_francine")
+@app.get("/dra_francine_backlink")
 def executar_crew_francine(tema: str = Query(...), palavra_chave: str = Query(...)):
     crew = build_crew_francine(tema, palavra_chave)
     resultado = crew.kickoff()
@@ -37,12 +38,14 @@ def executar_crew_tatiana(tema: str = Query(...), palavra_chave: str = Query(...
     return JSONResponse(content=resultado.model_dump())
 
 @app.get("/dr_gustavo")
+@app.get("/dr_gustavo_backlink")
 def executar_crew_gustavo(tema: str = Query(...), palavra_chave: str = Query(...)):
     crew = build_crew_gustavo(tema, palavra_chave)
     resultado = crew.kickoff()
     return JSONResponse(content=resultado.model_dump())
 
 @app.get("/dr_guilherme")
+@app.get("/dr_guilherme_backlink")
 def executar_crew_guilherme(tema: str = Query(...), palavra_chave: str = Query(...)):
     crew = build_crew_guilherme(tema, palavra_chave)
     resultado = crew.kickoff()
@@ -55,6 +58,7 @@ def executar_crew_karen(tema: str = Query(...), palavra_chave: str = Query(...))
     return JSONResponse(content=resultado.model_dump())
 
 @app.get("/nucleo_rural")
+@app.get("/nucleo_rural_backlink")
 def executar_crew_nucleorural(tema: str = Query(...), palavra_chave: str = Query(...)):
     crew = build_crew_nucleorural(tema, palavra_chave)
     resultado = crew.kickoff()
