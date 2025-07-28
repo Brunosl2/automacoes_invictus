@@ -19,6 +19,7 @@ from crews.dra_erika.crew_erika import build_crew_erika
 app = FastAPI()
 
 @app.get("/invictus")
+@app.get("/invictus_backlink")
 def executar_crew_invictus(tema: str = Query(...), palavra_chave: str = Query(...)):
     crew = build_crew_invictus(tema, palavra_chave)
     resultado = crew.kickoff()
@@ -32,6 +33,7 @@ def executar_crew_francine(tema: str = Query(...), palavra_chave: str = Query(..
     return JSONResponse(content=resultado.model_dump())
 
 @app.get("/dra_tati")
+@app.get("/dra_tati_backlink")
 def executar_crew_tatiana(tema: str = Query(...), palavra_chave: str = Query(...)):
     crew = build_crew_tatiana(tema, palavra_chave)
     resultado = crew.kickoff()
@@ -52,6 +54,7 @@ def executar_crew_guilherme(tema: str = Query(...), palavra_chave: str = Query(.
     return JSONResponse(content=resultado.model_dump())
 
 @app.get("/dra_karen")
+@app.get("/dra_karen_backlink")
 def executar_crew_karen(tema: str = Query(...), palavra_chave: str = Query(...)):
     crew = build_crew_karen(tema, palavra_chave)
     resultado = crew.kickoff()
@@ -65,12 +68,14 @@ def executar_crew_nucleorural(tema: str = Query(...), palavra_chave: str = Query
     return JSONResponse(content=resultado.model_dump())
 
 @app.get("/dr_gerson")
+@app.get("/dr_gerson_backlink")
 def executar_crew_gerson(tema: str = Query(...), palavra_chave: str = Query(...)):
     crew = build_crew_gerson(tema, palavra_chave)
     resultado = crew.kickoff()
     return JSONResponse(content=resultado.model_dump())
 
 @app.get("/villa_puppy")
+@app.get("/villa_puppy_backlink")
 def executar_crew_villapuppy(tema: str = Query(...), palavra_chave: str = Query(...)):
     crew = build_crew_villapuppy(tema, palavra_chave)
     resultado = crew.kickoff()
@@ -78,12 +83,14 @@ def executar_crew_villapuppy(tema: str = Query(...), palavra_chave: str = Query(
 
 
 @app.get("/dra_angelica")
+@app.get("/dra_angelica_backlink")
 def executar_crew_angelica(tema: str = Query(...), palavra_chave: str = Query(...)):
     crew = build_crew_angelica(tema, palavra_chave)
     resultado = crew.kickoff()
     return JSONResponse(content=resultado.model_dump())
 
 @app.get("/dra_erika")
+@app.get("/dra_erika_backlink")
 def executar_crew_erika(tema: str = Query(...), palavra_chave: str = Query(...)):
     crew = build_crew_erika(tema, palavra_chave)
     resultado = crew.kickoff()
