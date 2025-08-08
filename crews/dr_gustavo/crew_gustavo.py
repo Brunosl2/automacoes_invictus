@@ -159,7 +159,7 @@ Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
             description="""Inclua no final do HTML a assinatura personalizada conforme o tema, mantendo este formato:
 
 <p><strong>👉 Clique em saiba mais e agende sua consulta com o Dr. Gustavo Thá!</strong><br>
-<a href="https://api.whatsapp.com/send?phone=5541991076623&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações." target="_blank">https://api.whatsapp.com/send?phone=5541991076623&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações.</a></p>
+<a href="https://api.whatsapp.com/send?phone=5541999175858&text=Oi!%20Encontrei%20seu%20contato%20no%20site%20e%20gostaria%20de%20mais%20informações." target="_blank">https://api.whatsapp.com/send?phone=5541991076623&text=Oi!%20Encontrei%20seu%20site%20no%20Google%20e%20gostaria%20de%20mais%20informações.</a></p>
 
 <p><strong>Dr. Gustavo Thá — Dermatologista, especialista em tecnologias modernas de cuidado com a pele e cabelo em Curitiba</strong></p>""",
             expected_output="HTML com assinatura personalizada do Dr. Gustavo Thá.",

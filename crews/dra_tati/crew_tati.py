@@ -46,7 +46,7 @@ def build_crew_tatiana(tema: str, palavra_chave: str):
         llm=llm,
     )
 
-    agente_meio_lista = Agent(
+    agente_meio_lista = Agent( 
         role="Desenvolvedora de Conteúdo sobre Saúde das Unhas",
         goal="Escrever parágrafos explicativos e listas com base nos subtítulos, com linguagem clara e técnica",
         backstory="Profissional especializada em educação médica e prevenção, com foco em clareza e empatia.",
