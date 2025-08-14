@@ -81,7 +81,7 @@ def buscar_concorrentes_serpapi(palavra_chave: str) -> str:
 # -------------------------------
 # Função principal
 # -------------------------------
-def build_crew_invictus_conteudo(
+def build_crew_invictus(
     tema: str,
     palavra_chave: str,
     links_internos: list[dict] | None = None,
