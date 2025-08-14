@@ -95,3 +95,7 @@ def executar_crew_erika(tema: str = Query(...), palavra_chave: str = Query(...))
     crew = build_crew_erika(tema, palavra_chave)
     resultado = crew.kickoff()
     return JSONResponse(content=resultado.model_dump())
+
+@app.get("/teste")
+def teste():
+    return {"mensagem": "Teste OK"}
