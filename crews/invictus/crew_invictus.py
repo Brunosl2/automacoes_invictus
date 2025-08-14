@@ -67,8 +67,8 @@ def selecionar_links_externos_autoritativos(resultados_serp: list[dict], max_lin
             break
     return candidatos
 
-def buscar_concorrentes_serpapi(palavra_chave: str) -> str:
-    """Versão textual para inspiração de tópicos (NÃO copiar)."""
+def buscar_concorrentes_serpapi_texto(palavra_chave: str) -> str:
+    """Versão textual só para inspiração (NÃO copiar)."""
     results = buscar_concorrentes_serpapi_struct(palavra_chave)
     output = []
     for res in results:
@@ -79,40 +79,30 @@ def buscar_concorrentes_serpapi(palavra_chave: str) -> str:
     return "\n".join(output)
 
 # -------------------------------
-# Função principal
+# Função principal (sem passar URLs como parâmetro)
 # -------------------------------
-def build_crew_invictus(
-    tema: str,
-    palavra_chave: str,
-    links_internos: list[dict] | None = None,
-    links_externos: list[dict] | None = None
-):
+def build_crew_invictus(tema: str, palavra_chave: str):
     """
     Gera SOMENTE o conteúdo do post (HTML do body), pronto para WordPress.
 
-    Estilo de saída (modelo):
+    Estilo de saída:
     - Introdução com 1–2 links naturais em <p>.
-    - <h2> numerados: "1. Título", "2. Título", etc. (<h3> opcionais).
-    - Parágrafos curtos (2–4 linhas) e listas <ul><li> quando fizer sentido.
+    - <h2> numerados: "1. ...", "2. ..."; <h3> opcionais.
+    - Parágrafos curtos (2–4 linhas); listas <ul><li> quando fizer sentido.
     - Pelo menos UM heading contém a palavra‑chave.
-    - Sem <h1>. Sem imagens (<img>, <figure>, <picture>).
-    - Mínimo 1200 palavras no total.
+    - Sem <h1> e sem imagens.
+    - Mínimo 1200 palavras.
     - Linkagem: >=3 internos distribuídos (intro/corpo/conclusão) e >=1 externo (se houver whitelist).
-    - Anchors descritivas (nunca “clique aqui”).
-    - Links externos: target="_blank" rel="noopener noreferrer".
-    - Conclusão sem CTA comercial; CTA fica na assinatura institucional anexada ao final.
+    - Anchors descritivas; externos com target="_blank" rel="noopener noreferrer".
+    - Conclusão sem CTA comercial; CTA na assinatura ao final.
     """
-
-    # Defaults de linkagem
-    if not links_internos:
-        links_internos = LINKS_INTERNOS_INVICTUS[:]
-
-    if links_externos is None:
-        serp_struct = buscar_concorrentes_serpapi_struct(palavra_chave)
-        links_externos = selecionar_links_externos_autoritativos(serp_struct, max_links=2)
-
-    dados_concorrencia_txt = buscar_concorrentes_serpapi(palavra_chave)
     llm_local = llm
+
+    # Monta referências e links automaticamente
+    dados_concorrencia_txt = buscar_concorrentes_serpapi_texto(palavra_chave)
+    serp_struct = buscar_concorrentes_serpapi_struct(palavra_chave)
+    links_internos = LINKS_INTERNOS_INVICTUS[:]  # catálogo fixo
+    links_externos = selecionar_links_externos_autoritativos(serp_struct, max_links=2)
 
     # ==== Agentes ====
     agente_intro = Agent(
@@ -124,28 +114,28 @@ def build_crew_invictus(
 
     agente_outline = Agent(
         role="Arquiteto de Estrutura (H2/H3) com numeração",
-        goal="Definir 5–7 H2 numerados (1., 2., 3., ...), com H3 opcionais; cobrir integralmente a intenção de busca e incluir a palavra‑chave em pelo menos um heading.",
-        backstory="Especialista em outline SEO escaneável; nunca usa H1; mantém títulos específicos e não genéricos.",
+        goal="Definir 5–7 H2 numerados (1., 2., 3., ...), com H3 opcionais; cobrir a intenção de busca e incluir a palavra‑chave em pelo menos um heading.",
+        backstory="Especialista em outline SEO; nunca usa H1; títulos específicos.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_desenvolvimento = Agent(
         role="Redator de Desenvolvimento",
         goal="Preencher cada seção com <p> curtos e listas úteis, variar semântica da keyword sem stuffing e sem inserir imagens.",
-        backstory="Criador de conteúdo útil, direto, com exemplos práticos e linguagem clara.",
+        backstory="Conteúdo útil, direto, com exemplos práticos.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_conclusao = Agent(
         role="Redator de Conclusão (sem CTA)",
         goal="Encerrar resumindo aprendizados e próximos passos práticos sem convite comercial.",
-        backstory="Especialista em fechamentos naturais e objetivos.",
+        backstory="Fechamentos naturais e objetivos.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_unificador = Agent(
         role="Unificador de Conteúdo HTML",
-        goal="Unir tudo em HTML único (apenas body), coerente, sem redundância, com numeração nos H2 e sem imagens.",
+        goal="Unir tudo em HTML único (apenas body), coerente, sem redundância, com numeração dos H2 e sem imagens.",
         backstory="Editor técnico focado em semântica e limpeza de HTML.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
@@ -160,14 +150,14 @@ def build_crew_invictus(
     agente_contato = Agent(
         role="Responsável por Contato e Assinatura",
         goal="Anexar assinatura institucional da Invictus ao final do HTML (CTA/WhatsApp), sem alterar o conteúdo anterior.",
-        backstory="Garante padronização e identidade institucional.",
+        backstory="Padronização e identidade institucional.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_revisor = Agent(
         role="Revisor Sênior",
         goal="Listar melhorias objetivas (bullets) em clareza, gramática, estilo do modelo, distribuição de links e regras SEO.",
-        backstory="Revisor PT‑BR; corta redundâncias; mantém utilidade e consistência.",
+        backstory="Revisor PT‑BR; corta redundâncias; mantém consistência.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
@@ -182,14 +172,14 @@ def build_crew_invictus(
     tarefa_intro = Task(
         description=f"""
 Escreva a INTRODUÇÃO (2–3 <p>) para '{tema}' usando a palavra‑chave '{palavra_chave}' apenas 1 vez.
-Siga o estilo do MODELO (intro com link(s) natural(is) e menção a autoridade).
+Estilo do MODELO (intro com link(s) natural(is) e menção a autoridade).
 Regras:
 - PT‑BR; parágrafos curtos (2–4 linhas).
 - Sem clichês e sem promessas vazias.
-- PROIBIDO: <h1> e qualquer imagem (<img>, <figure>, <picture>).
+- PROIBIDO: <h1> e qualquer imagem.
 - Não usar headings na introdução; só <p>.
-- Se houver âncora compatível em links_internos, inclua 1 link interno natural no 2º parágrafo (anchor descritiva).
-Concorrência (inspiração de tópicos – NÃO copiar):
+- Se houver âncora compatível, inclua 1 link interno natural no 2º parágrafo (anchor descritiva).
+Concorrência (inspiração – NÃO copiar):
 {dados_concorrencia_txt}
 """.strip(),
         expected_output="HTML com 2–3 <p> (sem imagens) e possivelmente 1 link interno natural.",
@@ -205,7 +195,7 @@ Crie a ESTRUTURA (apenas headings) para '{tema}' no estilo do MODELO:
 - Incluir um H2 equivalente a "Erros comuns e armadilhas" e outro a "Exemplos práticos / aplicação".
 - Títulos específicos, claros e não genéricos.
 - Nunca usar <h1>. Não incluir conteúdo; só <h2>/<h3>.
-Baseie a cobertura na intenção de busca e em lacunas/oportunidades vistas nos concorrentes:
+Baseie a cobertura na intenção de busca e em lacunas/oportunidades dos concorrentes:
 {dados_concorrencia_txt}
 """.strip(),
         expected_output="Lista hierárquica com <h2> numerados e <h3> opcionais (sem conteúdo).",
@@ -220,7 +210,7 @@ Desenvolva o CORPO a partir dos H2/H3 definidos, mantendo a numeração dos H2:
 - Explicar: o que é, por que importa, como fazer, exemplos reais.
 - Variar semântica de '{palavra_chave}' sem stuffing.
 - Sem autopromoção e sem CTA.
-- PROIBIDO inserir QUALQUER imagem (<img>, <figure>, <picture>).
+- PROIBIDO inserir imagens.
 - Não inventar novos headings; usar apenas os fornecidos.
 - Quando fizer sentido, inclua links internos naturais no corpo (anchors descritivas).
 Concorrência (inspiração – NÃO copiar):
@@ -234,7 +224,7 @@ Concorrência (inspiração – NÃO copiar):
         description="""
 Escreva a CONCLUSÃO:
 - 1–2 <p> resumindo aprendizados e próximos passos práticos.
-- Zero CTA (o CTA fica na assinatura institucional).
+- Zero CTA (o CTA fica na assinatura).
 - Inclua 1 link interno natural se ainda não houver link na conclusão.
 - Não inserir imagens.
 """.strip(),
@@ -256,15 +246,28 @@ Saída: somente o conteúdo do body.
         agent=agente_unificador
     )
 
+    # >>>>> AQUI ESTÁ O AJUSTE: links colados na descrição (sem usar context dict)
+    links_internos_txt = "\n".join(
+        f"- {li['titulo']}: {li['url']} | âncora sugerida: {li['anchor_sugerida']}"
+        for li in links_internos
+    )
+    links_externos_txt = "\n".join(
+        f"- {le['titulo']}: {le['url']} | âncora sugerida: {le['anchor_sugerida']}"
+        for le in links_externos
+    ) or "(nenhum externo autorizado encontrado)"
+
     tarefa_linkagem = Task(
         description=f"""
-Insira LINKAGEM no HTML unificado (intro/corpo/conclusão) seguindo o estilo do MODELO:
-Contexto:
-- links_internos: lista de dicionários no formato {{titulo, url, anchor_sugerida}}
-- links_externos: lista opcional no formato {{titulo, url, anchor_sugerida}} (já filtrados por whitelist)
+Insira LINKAGEM no HTML unificado (intro/corpo/conclusão) seguindo o estilo do MODELO.
+
+Links internos disponíveis (use pelo menos 3, distribuídos):
+{links_internos_txt}
+
+Links externos candidatos (use >=1, se listado; com target="_blank" rel="noopener noreferrer"):
+{links_externos_txt}
+
 Regras:
-- >=3 links internos distribuídos: 1 na intro, 1–2 no corpo, 1 na conclusão (se aplicável).
-- >=1 link externo autoritativo (se fornecido), no corpo, com target="_blank" rel="noopener noreferrer".
+- Distribuição sugerida: 1 link interno na intro, 1–2 no corpo, 1 na conclusão (se aplicável).
 - Âncoras naturais e descritivas; nunca usar "clique aqui".
 - Não linkar em headings; apenas <p> e <li>.
 - Não quebrar HTML semântico; sem inline style.
@@ -272,8 +275,7 @@ Regras:
 Saída: HTML com linkagem aplicada.
 """.strip(),
         expected_output="HTML com links internos/externos aplicados (sem imagens).",
-        agent=agente_linkagem,
-        context=[{"links_internos": links_internos, "links_externos": links_externos}]
+        agent=agente_linkagem
     )
 
     tarefa_contato = Task(
