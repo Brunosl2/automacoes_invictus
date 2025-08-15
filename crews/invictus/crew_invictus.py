@@ -11,17 +11,24 @@ llm = ChatOpenAI(temperature=0.4)
 # Catálogo fixo de links internos (Invictus)
 # -------------------------------
 LINKS_INTERNOS_INVICTUS = [
-    {"titulo": "SEO Técnico", "url": "https://invictus.com.br/seo-tecnico",
-     "anchor_sugerida": "boas práticas de SEO técnico"},
-    {"titulo": "Marketing de Conteúdo", "url": "https://invictus.com.br/marketing-de-conteudo",
-     "anchor_sugerida": "estratégias de marketing de conteúdo"},
-    {"titulo": "Gestão de Tráfego", "url": "https://invictus.com.br/gestao-trafego",
-     "anchor_sugerida": "gestão de tráfego para aumentar conversões"},
-    {"titulo": "Cases", "url": "https://invictus.com.br/cases",
-     "anchor_sugerida": "nossos cases de resultados"},
-    {"titulo": "Contato", "url": "https://invictus.com.br/contato",
-     "anchor_sugerida": "fale com especialistas da Invictus"},
+    {"titulo": "Quem Somos", "url": "https://invictusmarketing.com.br/quem-somos",
+     "anchor_sugerida": "conheça mais sobre a Invictus Marketing"},
+    {"titulo": "Serviços", "url": "https://invictusmarketing.com.br/servicos",
+     "anchor_sugerida": "nossos serviços de marketing digital"},
+    {"titulo": "Blog", "url": "https://invictusmarketing.com.br/blog",
+     "anchor_sugerida": "conteúdos e dicas de marketing no blog da Invictus"},
+    {"titulo": "Contato", "url": "https://invictusmarketing.com.br/contato",
+     "anchor_sugerida": "fale com especialistas da Invictus Marketing"},
+    {"titulo": "Business Intelligence", "url": "https://invictusmarketing.com.br/business-intelligence",
+     "anchor_sugerida": "soluções de Business Intelligence para seu negócio"},
+    {"titulo": "Tráfego Pago", "url": "https://invictusmarketing.com.br/trafego-pago",
+     "anchor_sugerida": "estratégias de tráfego pago para aumentar conversões"},
+    {"titulo": "SEO", "url": "https://invictusmarketing.com.br/seo",
+     "anchor_sugerida": "melhores práticas de SEO para seu site"},
+    {"titulo": "Google Meu Negócio", "url": "https://invictusmarketing.com.br/google-meu-negocio",
+     "anchor_sugerida": "otimização do Google Meu Negócio para atrair clientes"},
 ]
+
 
 # -------------------------------
 # SERP helper + whitelist para externos
