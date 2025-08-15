@@ -4,204 +4,348 @@ from serpapi import GoogleSearch
 from crewai import Crew, Agent, Task
 from langchain_openai import ChatOpenAI
 
-
 load_dotenv()
 llm = ChatOpenAI(temperature=0.4)
 
-def buscar_concorrentes_serpapi(palavra_chave):
+# -------------------------------
+# Catálogo fixo de links internos (Francine)
+# -------------------------------
+LINKS_INTERNOS_FRANCINE = [
+    {
+        "titulo": "Clínica Francine Dermatologia (Home)",
+        "url": "https://francinedermatologia.com.br",
+        "anchor_sugerida": "Clínica Francine Dermatologia em Porto Alegre"
+    },
+    {
+        "titulo": "Sobre a Dra. Francine Costa",
+        "url": "https://francinedermatologia.com.br/dra-francine-costa-dermatologia-clinica-e-estetica-em-porto-alegre/",
+        "anchor_sugerida": "conheça a Dra. Francine Costa"
+    },
+    {
+        "titulo": "Tratamentos",
+        "url": "https://francinedermatologia.com.br/tratamentos/",
+        "anchor_sugerida": "tratamentos dermatológicos na clínica"
+    },
+    {
+        "titulo": "Blog",
+        "url": "https://francinedermatologia.com.br/blog/",
+        "anchor_sugerida": "conteúdos sobre saúde e beleza da pele"
+    }
+]
+
+# -------------------------------
+# SERP helper + whitelist para externos (autoridades médicas)
+# -------------------------------
+WHITELIST_EXTERNOS_FRANCINE = [
+    # TLDs de confiança
+    ".gov", ".gov.br", ".edu", ".edu.br",
+    # Autoridades médicas e de saúde
+    "sbd.org.br",              # Sociedade Brasileira de Dermatologia
+    "aad.org",                 # American Academy of Dermatology
+    "who.int",                 # OMS
+    "nhs.uk",                  # National Health Service (UK)
+    "cdc.gov",                 # CDC (EUA)
+    "nih.gov", "ncbi.nlm.nih.gov", "medlineplus.gov",  # NIH / PubMed / Medline
+    "cochranelibrary.com",     # Revisões sistemáticas
+    "dermnetnz.org",           # DermNet
+    # Padrões web/SEO úteis quando apropriado
+    "schema.org", "w3.org", "developers.google.com", "support.google.com"
+]
+
+def _usa_whitelist_francine(url: str) -> bool:
+    url_l = (url or "").lower()
+    return any(dom in url_l for dom in WHITELIST_EXTERNOS_FRANCINE)
+
+def buscar_concorrentes_serpapi_struct(palavra_chave: str) -> list[dict]:
     search = GoogleSearch({
         "q": palavra_chave,
         "hl": "pt-br",
         "gl": "br",
-        "num": 5,
+        "num": 10,
         "api_key": os.getenv("SERPAPI_API_KEY")
     })
-    results = search.get_dict()
+    d = search.get_dict()
+    return d.get("organic_results", []) or []
+
+def selecionar_links_externos_autoritativos(resultados_serp: list[dict], max_links: int = 2) -> list[dict]:
+    candidatos, vistos = [], set()
+    for r in resultados_serp:
+        url = r.get("link") or r.get("url") or ""
+        titulo = (r.get("title") or "").strip()
+        if not url or url in vistos:
+            continue
+        if _usa_whitelist_francine(url):
+            candidatos.append({
+                "titulo": titulo[:90] or "Fonte externa",
+                "url": url,
+                "anchor_sugerida": (titulo[:70].lower() or "fonte oficial")
+            })
+            vistos.add(url)
+        if len(candidatos) >= max_links:
+            break
+    return candidatos
+
+def buscar_concorrentes_serpapi_texto(palavra_chave: str) -> str:
+    """Versão textual só para inspiração (NÃO copiar)."""
+    results = buscar_concorrentes_serpapi_struct(palavra_chave)
     output = []
-    for res in results.get("organic_results", []):
+    for res in results:
         titulo = res.get("title", "")
         snippet = res.get("snippet", "")
-        link = res.get("link", "")
+        link = res.get("link", "") or res.get("url", "")
         output.append(f"Título: {titulo}\nTrecho: {snippet}\nURL: {link}\n")
     return "\n".join(output)
 
+# -------------------------------
+# Função principal (Francine)
+# -------------------------------
 def build_crew_francine(tema: str, palavra_chave: str):
-    dados_concorrencia = buscar_concorrentes_serpapi(palavra_chave)
+    """
+    Gera SOMENTE o conteúdo do post (HTML do body), pronto para WordPress, para a
+    Clínica Francine Dermatologia.
 
+    Estilo de saída:
+    - Introdução com 1 a 2 links naturais em <p>.
+    - <h2> numerados: "1. ...", "2. ..."; <h3> opcionais.
+    - Parágrafos curtos (2 a 4 linhas); listas <ul><li> quando fizer sentido.
+    - Pelo menos UM heading contém a palavra-chave.
+    - Sem <h1> e sem imagens.
+    - Mínimo 1200 palavras.
+    - Linkagem: >=3 internos distribuídos (intro/corpo/conclusão) e >=1 externo de autoridade.
+    - Anchors descritivas; externos com target="_blank" rel="noopener noreferrer".
+    - Conclusão sem CTA; CTA apenas na assinatura final da Dra. Francine.
+    """
+    llm_local = llm
+
+    # Monta referências e links automaticamente
+    dados_concorrencia_txt = buscar_concorrentes_serpapi_texto(palavra_chave)
+    serp_struct = buscar_concorrentes_serpapi_struct(palavra_chave)
+    links_internos = LINKS_INTERNOS_FRANCINE[:]  # catálogo fixo (Francine)
+    links_externos = selecionar_links_externos_autoritativos(serp_struct, max_links=2)
+
+    # ==== Agentes (voz dermatologia) ====
     agente_intro = Agent(
-        role="Redatora de Introdução",
-        goal="Criar uma introdução acolhedora com foco em dermatologia e a palavra-chave",
-        backstory="Especialista em comunicação empática em saúde dermatológica, introduzindo temas com clareza e acolhimento.",
-        verbose=True,
-        allow_delegation=False,
-        llm=llm,
+        role="Redator de Introdução (Dermatologia)",
+        goal="Escrever introdução clara e acolhedora (2 a 3 parágrafos) no tom da clínica, citando a palavra‑chave 1x.",
+        backstory="Copywriter sênior em saúde; parágrafos curtos, linguagem acessível e responsável.",
+        verbose=True, allow_delegation=False, llm=llm_local,
     )
 
-    agente_meio_h2 = Agent(
-        role="Criadora de Subtítulos Dermatológicos",
-        goal="Criar subtítulos H2 claros e objetivos sobre dermatologia clínica e estética",
-        backstory="Especialista em estruturar conteúdos sobre saúde da pele, envelhecimento e tratamentos estéticos.",
-        verbose=True,
-        allow_delegation=False,
-        llm=llm,
+    agente_outline = Agent(
+        role="Arquiteto de Estrutura (H2/H3) numerada",
+        goal="Definir 5 a 7 H2 numerados; cobrir intenção de busca do paciente; incluir a palavra‑chave em pelo menos um heading.",
+        backstory="Especialista em outline SEO para saúde; títulos informativos e específicos.",
+        verbose=True, allow_delegation=False, llm=llm_local,
     )
 
-    agente_meio_lista = Agent(
-        role="Desenvolvedora de Conteúdo Dermatológico",
-        goal="Escrever parágrafos e listas detalhadas sobre cuidados dermatológicos e protocolos estéticos",
-        backstory="Profissional com experiência em dermatologia clínica e estética, focada em conteúdo educativo e humanizado.",
-        verbose=True,
-        allow_delegation=False,
-        llm=llm,
+    agente_desenvolvimento = Agent(
+        role="Redator de Desenvolvimento (Educação em Saúde)",
+        goal="Preencher cada seção com orientação prática, sem promessas; variar semântica da keyword sem stuffing.",
+        backstory="Produz conteúdo útil, com exemplos, listas e linguagem clara; sem autopromoção.",
+        verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_conclusao = Agent(
-        role="Finalizadora de Conteúdos Dermatológicos",
-        goal="Encerrar o texto reforçando a importância do cuidado contínuo com a pele, sem chamada direta para ação",
-        backstory="Especialista em conclusões técnicas e institucionais para conteúdos médicos dermatológicos.",
-        verbose=True,
-        allow_delegation=False,
-        llm=llm,
-    )
-
-    agente_contato = Agent(
-        role="Geradora de Assinatura Personalizada da Dra. Francine Costa",
-        goal="Adicionar uma assinatura final personalizada conforme o tema do artigo, seguindo o padrão institucional",
-        backstory="Responsável pela assinatura oficial da Dra. Francine, com foco em reforçar autoridade e confiança.",
-        verbose=True,
-        allow_delegation=False,
-        llm=llm,
+        role="Redator de Conclusão",
+        goal="Encerrar resumindo aprendizados e próximos passos práticos, sem CTA comercial.",
+        backstory="Fechamentos objetivos e empáticos.",
+        verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_unificador = Agent(
-        role="Unificadora de HTML",
-        goal="Unir o artigo em HTML limpo e formatado para WordPress",
-        backstory="Especialista em formatação de conteúdo médico para web, garantindo legibilidade e padrão visual.",
-        verbose=True,
-        allow_delegation=False,
-        llm=llm,
+        role="Editor/Unificador de HTML",
+        goal="Unir tudo em HTML único (apenas body), coerente, sem redundância, mantendo numeração.",
+        backstory="Editor técnico focado em semântica limpa para WordPress.",
+        verbose=True, allow_delegation=False, llm=llm_local,
+    )
+
+    agente_linkagem = Agent(
+        role="Especialista em Linkagem (EEAT)",
+        goal="Inserir links internos/externos de forma natural e distribuída, priorizando autoridade médica.",
+        backstory="Foco em experiência, expertise e confiabilidade.",
+        verbose=True, allow_delegation=False, llm=llm_local,
+    )
+
+    agente_contato = Agent(
+        role="Responsável por Assinatura (Clínica Francine)",
+        goal="Anexar assinatura institucional da clínica ao final do HTML (CTA/WhatsApp), sem alterar o conteúdo anterior.",
+        backstory="Padronização e identidade da Dra. Francine.",
+        verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_revisor = Agent(
-        role="Revisora da Dra. Francine Costa",
-        goal="Revisar o post com foco em clareza, empatia e correção dermatológica",
-        backstory="Redatora médica com experiência em revisar textos de dermatologia clínica e estética, sempre mantendo tom humanizado e técnico.",
-        verbose=True,
-        allow_delegation=False,
-        llm=llm,
+        role="Revisor Sênior PT-BR",
+        goal="Listar melhorias objetivas em clareza, gramática, estilo, linkagem e regras SEO.",
+        backstory="Revisor de saúde; corta redundâncias e mantém consistência.",
+        verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_executor = Agent(
-        role="Aplicador de Revisões",
-        goal="Aplicar as sugestões mantendo a estrutura HTML e o estilo da clínica",
-        backstory="Desenvolvedora de conteúdo médico, especialista em ajustes técnicos e consistência de linguagem.",
-        verbose=True,
-        allow_delegation=False,
-        llm=llm,
+        role="Executor de Revisões",
+        goal="Aplicar todas as melhorias preservando estrutura e linkagem.",
+        backstory="Editor/Dev de HTML limpo.",
+        verbose=True, allow_delegation=False, llm=llm_local,
     )
 
-    agente_seo = Agent(
-        role="Especialista em SEO para Dermatologia",
-        goal="Otimizar o artigo com foco em busca orgânica para clínica dermatológica e gerar uma meta description eficaz",
-        backstory="Especialista em SEO médico com foco em clínicas dermatológicas e estética segura, baseado em E-A-T.",
-        verbose=True,
-        allow_delegation=False,
-        llm=llm,
-    )
-
-    agente_finalizador = Agent(
-        role="Formatadora Final para Publicação",
-        goal="Extrair título, meta description e <body> do HTML final para envio via API",
-        backstory="Especialista em integração WordPress, entrega conteúdo pronto para automação de publicação.",
-        verbose=True,
-        allow_delegation=False,
-        llm=llm,
-    )
-
+    # ==== Tarefas ====
     tarefa_intro = Task(
-        description=f"""Escreva a introdução do artigo sobre '{tema}' com a palavra-chave '{palavra_chave}', em PT-BR.
-    Use <p> e linguagem acolhedora, considerando o público de uma clínica dermatológica.
-    Considere este resumo da concorrência:\n\n{dados_concorrencia}""",
-        expected_output="Introdução em HTML com dois parágrafos, linguagem acessível e a palavra-chave.",
+        description=f"""
+Escreva a INTRODUÇÃO (2 a 3 <p>) para '{tema}' usando a palavra‑chave '{palavra_chave}' apenas 1 vez.
+Estilo: acolhedor, informativo, sem jargões.
+Regras:
+- PT‑BR; parágrafos curtos (2 a 4 linhas).
+- Sem clichês e sem promessas.
+- PROIBIDO: <h1> e qualquer imagem.
+- Não usar headings; apenas <p>.
+- Inclua 1 link interno natural no 2º parágrafo (anchor descritiva), se compatível.
+Concorrência (inspiração  a  NÃO copiar):
+{dados_concorrencia_txt}
+""".strip(),
+        expected_output="HTML com 2 a 3 <p> e possivelmente 1 link interno natural.",
         agent=agente_intro
     )
 
-    tarefa_meio_h2 = Task(
-        description=f"""Crie subtítulos <h2> para o artigo sobre '{tema}', considerando o público de dermatologia clínica e estética.
-    Baseie-se neste resumo da concorrência:\n\n{dados_concorrencia}""",
-        expected_output="Lista de subtítulos <h2> claros e relevantes.",
-        agent=agente_meio_h2
+    tarefa_outline = Task(
+        description=f"""
+Crie a ESTRUTURA (apenas headings) para '{tema}':
+- 5 a 7 <h2> numerados ('1. ', '2. ', ...).
+- Até 2 <h3> por <h2> quando fizer sentido.
+- Pelo menos UM heading deve conter a palavra‑chave '{palavra_chave}' de forma natural.
+- Incluir um H2 de "Erros comuns e armadilhas" e outro de "Exemplos práticos / aplicação".
+- Nunca usar <h1>. Não incluir conteúdo; só <h2>/<h3>.
+Baseie a cobertura na intenção de busca do paciente e lacunas dos concorrentes:
+{dados_concorrencia_txt}
+""".strip(),
+        expected_output="Lista hierárquica com <h2> numerados e <h3> opcionais (sem conteúdo).",
+        agent=agente_outline
     )
 
-    tarefa_meio_lista = Task(
-        description=f"""Desenvolva parágrafos <p> e listas <ul><li> com base nos subtítulos sobre '{tema}'.
-    Foque em orientação dermatológica, estética, prevenção e cuidados.
-    Use este resumo da concorrência:\n\n{dados_concorrencia}""",
-        expected_output="HTML com conteúdo detalhado e estruturado.",
-        agent=agente_meio_lista
+    tarefa_desenvolvimento = Task(
+        description=f"""
+Desenvolva o CORPO a partir dos H2/H3 definidos, mantendo a numeração dos H2:
+- Mínimo 1200 palavras no post completo.
+- <p> curtos (2 a 4 linhas); usar <ul><li> quando listar.
+- Explique: o que é, por que importa, como fazer, exemplos reais.
+- Variar semântica de '{palavra_chave}' sem keyword stuffing.
+- Sem autopromoção e sem CTA.
+- PROIBIDO inserir imagens.
+- Não inventar novos headings; usar apenas os fornecidos.
+- Quando fizer sentido, inclua links internos naturais no corpo (anchors descritivas).
+Concorrência (inspiração  a  NÃO copiar):
+{dados_concorrencia_txt}
+""".strip(),
+        expected_output="HTML com <h2> numerados, <h3> opcionais, <p> e <ul><li>.",
+        agent=agente_desenvolvimento
     )
 
     tarefa_conclusao = Task(
-        description=f"""Finalize o artigo reforçando a importância dos cuidados dermatológicos, sem chamada para ação direta.
-    Use este resumo da concorrência como referência:\n\n{dados_concorrencia}""",
-        expected_output="Conclusão suave e técnica em HTML, sem CTA.",
+        description="""
+Escreva a CONCLUSÃO:
+- 1 a 2 <p> resumindo aprendizados e próximos passos práticos.
+- Zero CTA (o CTA fica na assinatura).
+- Inclua 1 link interno natural se ainda não houver link na conclusão.
+- Não inserir imagens.
+""".strip(),
+        expected_output="Conclusão em <p>, possivelmente com 1 link interno.",
         agent=agente_conclusao
     )
 
-    tarefa_contato = Task(
-        description="""Inclua ao final do HTML esta assinatura personalizada:
-
-    <p><strong>Agende sua consulta e aprenda como manter sua pele jovem, firme e luminosa após os 40!</strong><br>
-    <a href="https://api.whatsapp.com/send?phone=5511966189853&text=Oi!%20Encontrei%20seu%20perfil%20no%20Google%20e%20gostaria%20de%20mais%20informações" target="_blank">https://api.whatsapp.com/send?phone=5511966189853&text=Oi!%20Encontrei%20seu%20perfil%20no%20Google%20e%20gostaria%20de%20mais%20informações</a></p>
-
-    <p><strong>Dra Francine Costa — Dermatologista em Porto Alegre</strong></p>""",
-        expected_output="HTML final com assinatura personalizada da Dra. Francine Costa.",
-        agent=agente_contato
-    )
-
-
     tarefa_unificar = Task(
-        description="Una introdução, corpo e conclusão em um único HTML. Use tags válidas e mantenha fluidez e coerência.",
-        expected_output="HTML completo formatado para WordPress.",
+        description="""
+Una introdução, corpo e conclusão em um único HTML (conteúdo do body, sem <body>).
+Regras:
+- Garantir coerência, zero repetição e manter a NUMERAÇÃO dos <h2>.
+- Mínimo 1200 palavras no total.
+- Usar apenas: <h2>, <h3>, <p>, <ul>, <li>, <a>, <strong>, <em>.
+- PROIBIDO: <h1>, <html>, <head>, <title>, meta, estilos inline, QUALQUER imagem.
+Saída: somente o conteúdo do body.
+""".strip(),
+        expected_output="HTML WordPress-ready (apenas conteúdo do body).",
         agent=agente_unificador
     )
 
+    # Links (texto) para os agentes de linkagem
+    links_internos_txt = "\n".join(
+        f"- {li['titulo']}: {li['url']} | âncora sugerida: {li['anchor_sugerida']}"
+        for li in links_internos
+    )
+    links_externos_txt = "\n".join(
+        f"- {le['titulo']}: {le['url']} | âncora sugerida: {le['anchor_sugerida']}"
+        for le in links_externos
+    ) or "(nenhum externo autorizado encontrado)"
+
+    tarefa_linkagem = Task(
+        description=f"""
+Insira LINKAGEM no HTML unificado (intro/corpo/conclusão) no estilo da Clínica Francine.
+
+Links internos disponíveis (use pelo menos 3, distribuídos):
+{links_internos_txt}
+
+Links externos candidatos (use >=1, se listado; com target="_blank" rel="noopener noreferrer"):
+{links_externos_txt}
+
+Regras:
+- Distribuição sugerida: 1 link interno na intro, 1 a 2 no corpo, 1 na conclusão (se aplicável).
+- Âncoras naturais e descritivas; nunca usar "clique aqui".
+- Não linkar em headings; apenas <p> e <li>.
+- Não quebrar HTML semântico; sem inline style.
+- Não adicionar imagens.
+Saída: HTML com linkagem aplicada.
+""".strip(),
+        expected_output="HTML com links internos/externos aplicados.",
+        agent=agente_linkagem
+    )
+
+    # Assinatura/CTA da Dra. Francine
+    tarefa_contato = Task(
+        description="""
+Anexar ao FINAL do HTML a assinatura da clínica (sem alterar o conteúdo anterior):
+<p><strong>👉 Agende sua consulta com a Dra. Francine Costa</strong></p>
+<p><a href="https://api.whatsapp.com/send?phone=5551999114348&text=Oi!%20Encontrei%20seu%20site%20e%20gostaria%20de%20mais%20informações." target="_blank" rel="noopener noreferrer">Fale pelo WhatsApp: (51) 99911‑4348</a></p>
+<p><strong>Clínica Francine Dermatologia</strong><br>R. 24 de Outubro, 1440  a  Sala 1107  a  Auxiliadora, Porto Alegre  a  RS</p>
+""".strip(),
+        expected_output="HTML final com assinatura adicionada.",
+        agent=agente_contato
+    )
+
     tarefa_revisar = Task(
-        description="Revise o HTML com foco em clareza, empatia e coerência com a linguagem da Dra. Francine Costa.",
-        expected_output="Lista de sugestões claras e objetivas.",
+        description=f"""
+Revise o HTML final quanto a:
+- Ortografia/gramática PT‑BR; clareza; tom acolhedor e profissional.
+- Estilo: H2 numerados, parágrafos curtos, listas quando úteis, distribuição de links.
+- Coerência e distribuição de links; âncoras descritivas; ausência de overstuffing de '{palavra_chave}'.
+- Respeito às proibições de imagens e de <h1>.
+Saída: lista de melhorias acionáveis em bullets JSON‑like:
+- {{"campo":"trecho/resumo","problema":"...","acao":"..."}}
+""".strip(),
+        expected_output="Bullets com melhorias acionáveis.",
         agent=agente_revisor
     )
 
     tarefa_corrigir = Task(
-        description="Aplique as revisões mantendo estrutura HTML e tom humanizado.",
-        expected_output="HTML revisado e finalizado.",
+        description="""
+Aplique TODAS as melhorias propostas, preservando:
+- Estrutura semântica (<h2> numerados/<h3>/<p>/<ul><li>/<a>).
+- Linkagem já aplicada (ajuste âncora só se necessário).
+- Ausência de imagens e de <h1>.
+Saída: HTML final (somente conteúdo do body).
+""".strip(),
+        expected_output="HTML final revisado (body only).",
         agent=agente_executor
     )
 
-    tarefa_seo = Task(
-        description=f"""Otimize o HTML final para SEO, com foco em dermatologia clínica e estética.
-Gere uma meta description persuasiva e natural. Baseie-se neste resumo:\n\n{dados_concorrencia}""",
-        expected_output="HTML otimizado + meta description em PT-BR.",
-        agent=agente_seo
-    )
-
-    tarefa_finalizar = Task(
-        description="Extraia título, meta description e conteúdo <body>. Formate como JSON com os campos 'titulo', 'meta_description' e 'html_body'.",
-        expected_output="JSON pronto para API WordPress.",
-        agent=agente_finalizador
-    )
-
+    # ==== Crew ====
     crew_francine = Crew(
         agents=[
-            agente_intro, agente_meio_h2, agente_meio_lista, agente_conclusao,
-            agente_contato, agente_unificador, agente_revisor, agente_executor,
-            agente_seo, agente_finalizador
+            agente_intro, agente_outline, agente_desenvolvimento, agente_conclusao,
+            agente_unificador, agente_linkagem, agente_contato,
+            agente_revisor, agente_executor
         ],
         tasks=[
-            tarefa_intro, tarefa_meio_h2, tarefa_meio_lista, tarefa_conclusao, tarefa_contato,
-            tarefa_unificar, tarefa_revisar, tarefa_corrigir, tarefa_seo, tarefa_finalizar
+            tarefa_intro, tarefa_outline, tarefa_desenvolvimento, tarefa_conclusao,
+            tarefa_unificar, tarefa_linkagem, tarefa_contato,
+            tarefa_revisar, tarefa_corrigir
         ],
         verbose=True
     )
-
     return crew_francine
