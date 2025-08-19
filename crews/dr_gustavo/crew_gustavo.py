@@ -337,6 +337,7 @@ Aplique TODAS as melhorias propostas, preservando:
 - Estrutura semântica (<h2> numerados/<h3>/<p>/<ul><li>/<a>).
 - Linkagem já aplicada (ajuste âncora só se necessário).
 - Ausência de imagens e de <h1>.
+- Assinatura final com link para whatsapp.
 Saída: HTML final (somente conteúdo do body).
 """.strip(),
         expected_output="HTML final revisado (body only, sem imagens).",
