@@ -323,19 +323,15 @@ Saída: HTML com linkagem aplicada.
         agent=agente_linkagem
     )
 
-    # Assinatura/CTA da Dra. Tatiana (padrão)
+    # Assinatura/CTA da Dra. Tatiana (NOVA VERSÃO)
     tarefa_contato = Task(
         description="""
-Anexar ao FINAL do HTML a assinatura padrão da Dra. Tatiana (sem alterar o conteúdo anterior):
-<p><strong>Clique aqui agende sua consulta via WhatsApp e receba avaliação especializada:</strong><br>
-<a href="https://api.whatsapp.com/send?phone=5511991578420&text=Oi!%20Encontrei%20seu%20contato%20no%20site%20e%20gostaria%20de%20mais%20informações" target="_blank" rel="noopener noreferrer">
-https://api.whatsapp.com/send?phone=5511991578420&amp;text=Oi!%20Encontrei%20seu%20contato%20no%20site%20e%20gostaria%20de%20mais%20informações
-</a></p>
-<p><strong>Siga o Instagram:</strong> <a href="https://www.instagram.com/dratatianagabbi/" target="_blank" rel="noopener noreferrer">@dratatianagabbi</a> para acompanhar conteúdos exclusivos sobre saúde das unhas e cuidados com a pele no inverno.<br>
-<a href="https://www.instagram.com/dratatianagabbi/" target="_blank" rel="noopener noreferrer">https://www.instagram.com/dratatianagabbi/</a></p>
-<p><strong>Dra. Tatiana Gabbi</strong> &nbsp;Médica Dermatologista especializada em doenças das unhas em São Paulo</p>
+Anexar ao FINAL do HTML a assinatura padrão ATUALIZADA da Dra. Tatiana (sem alterar o conteúdo anterior):
+<p><strong><a href="https://api.whatsapp.com/send?phone=5511991578420&amp;text=Oi!%20Encontrei%20seu%20contato%20no%20site%20e%20gostaria%20de%20mais%20informações">Agende sua consulta via WhatsApp para avaliação especializada</a></strong></p>
+<p><strong>Siga o Instagram da Dra. Tatiana Gabbi:</strong> <a href="https://www.instagram.com/dratatianagabbi/" target="_blank" rel="noopener noreferrer">@dratatianagabbi</a> e acompanhe conteúdos exclusivos sobre a saúde das unhas e cuidados dermatológicos ao longo do ano.</p>
+<p><strong>Dra. Tatiana Gabbi</strong> - Médica Dermatologista especializada em doenças das unhas, atuando em São Paulo com excelência e cuidado personalizado</p>
 """.strip(),
-        expected_output="HTML final com assinatura adicionada.",
+        expected_output="HTML final com assinatura ATUALIZADA adicionada.",
         agent=agente_contato
     )
 
