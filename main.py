@@ -10,7 +10,7 @@ from crews.nucleo_rural.crew_nucleo_rural import build_crew_nucleorural
 from crews.dr_gerson.crew_gerson import build_crew_gerson
 from crews.villa_puppy.crew_villa_puppy import build_crew_villapuppy
 from crews.dra_angelica.crew_angelica import build_crew_angelica
-from crews.dra_erika.crew_erika import build_crew_erika
+from crews.dra_emmen.crew_emmen import build_crew_emmen
 
 
 
@@ -89,10 +89,10 @@ def executar_crew_angelica(tema: str = Query(...), palavra_chave: str = Query(..
     resultado = crew.kickoff()
     return JSONResponse(content=resultado.model_dump())
 
-@app.get("/dra_erika")
-@app.get("/dra_erika_backlink")
-def executar_crew_erika(tema: str = Query(...), palavra_chave: str = Query(...)):
-    crew = build_crew_erika(tema, palavra_chave)
+@app.get("/dra_emmen")
+@app.get("/dra_emmen_backlink")
+def executar_crew_emmen(tema: str = Query(...), palavra_chave: str = Query(...)):
+    crew = build_crew_emmen(tema, palavra_chave)
     resultado = crew.kickoff()
     return JSONResponse(content=resultado.model_dump())
 
