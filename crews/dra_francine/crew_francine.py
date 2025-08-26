@@ -105,15 +105,15 @@ def build_crew_francine(tema: str, palavra_chave: str):
     Clínica Francine Dermatologia.
 
     Estilo de saída:
-    - Introdução com 1 a 2 links naturais em <p>.
+    - Introdução com 1–2 links naturais em <p>.
     - <h2> numerados: "1. ...", "2. ..."; <h3> opcionais.
-    - Parágrafos curtos (2 a 4 linhas); listas <ul><li> quando fizer sentido.
-    - Pelo menos UM heading contém a palavra-chave.
+    - Parágrafos curtos (2–4 linhas); listas <ul><li> quando fizer sentido.
+    - Pelo menos UM heading contém a palavra‑chave.
     - Sem <h1> e sem imagens.
     - Mínimo 1200 palavras.
     - Linkagem: >=3 internos distribuídos (intro/corpo/conclusão) e >=1 externo de autoridade.
     - Anchors descritivas; externos com target="_blank" rel="noopener noreferrer".
-    - Conclusão sem CTA; CTA apenas na assinatura final da Dra. Francine.
+    - Conclusão sem CTA comercial; CTA na assinatura final da Dra. Francine.
     """
     llm_local = llm
 
@@ -123,46 +123,46 @@ def build_crew_francine(tema: str, palavra_chave: str):
     links_internos = LINKS_INTERNOS_FRANCINE[:]  # catálogo fixo (Francine)
     links_externos = selecionar_links_externos_autoritativos(serp_struct, max_links=2)
 
-    # ==== Agentes (voz dermatologia) ====
+    # ==== Agentes ====
     agente_intro = Agent(
         role="Redator de Introdução (Dermatologia)",
-        goal="Escrever introdução clara e acolhedora (2 a 3 parágrafos) no tom da clínica, citando a palavra‑chave 1x.",
-        backstory="Copywriter sênior em saúde; parágrafos curtos, linguagem acessível e responsável.",
+        goal="Escrever introdução clara e acolhedora (2–3 parágrafos) no tom da clínica, citando a palavra‑chave 1x.",
+        backstory="Copywriter sênior em saúde; parágrafos curtos, linguagem acessível e responsável; sem imagens.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_outline = Agent(
         role="Arquiteto de Estrutura (H2/H3) numerada",
-        goal="Definir 5 a 7 H2 numerados; cobrir intenção de busca do paciente; incluir a palavra‑chave em pelo menos um heading.",
-        backstory="Especialista em outline SEO para saúde; títulos informativos e específicos.",
+        goal="Definir 5–7 H2 numerados (1., 2., 3., ...), com H3 opcionais; cobrir intenção de busca do paciente e incluir a palavra‑chave em pelo menos um heading.",
+        backstory="Especialista em outline SEO para saúde; nunca usa H1; títulos informativos e específicos.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_desenvolvimento = Agent(
         role="Redator de Desenvolvimento (Educação em Saúde)",
-        goal="Preencher cada seção com orientação prática, sem promessas; variar semântica da keyword sem stuffing.",
+        goal="Preencher cada seção com orientação prática, sem promessas; variar semântica da keyword sem stuffing e sem inserir imagens.",
         backstory="Produz conteúdo útil, com exemplos, listas e linguagem clara; sem autopromoção.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_conclusao = Agent(
-        role="Redator de Conclusão",
+        role="Redator de Conclusão (sem CTA)",
         goal="Encerrar resumindo aprendizados e próximos passos práticos, sem CTA comercial.",
         backstory="Fechamentos objetivos e empáticos.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_unificador = Agent(
-        role="Editor/Unificador de HTML",
-        goal="Unir tudo em HTML único (apenas body), coerente, sem redundância, mantendo numeração.",
+        role="Unificador de Conteúdo HTML",
+        goal="Unir tudo em HTML único (apenas body), coerente, sem redundância, mantendo numeração e sem imagens.",
         backstory="Editor técnico focado em semântica limpa para WordPress.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_linkagem = Agent(
-        role="Especialista em Linkagem (EEAT)",
+        role="Planejador e Implementador de Linkagem (EEAT)",
         goal="Inserir links internos/externos de forma natural e distribuída, priorizando autoridade médica.",
-        backstory="Foco em experiência, expertise e confiabilidade.",
+        backstory="Especialista em internal linking e EEAT para área da saúde.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
@@ -175,14 +175,14 @@ def build_crew_francine(tema: str, palavra_chave: str):
 
     agente_revisor = Agent(
         role="Revisor Sênior PT-BR",
-        goal="Listar melhorias objetivas em clareza, gramática, estilo, linkagem e regras SEO.",
+        goal="Listar melhorias objetivas (bullets) em clareza, gramática, estilo, linkagem e regras SEO.",
         backstory="Revisor de saúde; corta redundâncias e mantém consistência.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
 
     agente_executor = Agent(
         role="Executor de Revisões",
-        goal="Aplicar todas as melhorias preservando estrutura e linkagem.",
+        goal="Aplicar todas as melhorias preservando estrutura semântica e linkagem.",
         backstory="Editor/Dev de HTML limpo.",
         verbose=True, allow_delegation=False, llm=llm_local,
     )
@@ -190,28 +190,29 @@ def build_crew_francine(tema: str, palavra_chave: str):
     # ==== Tarefas ====
     tarefa_intro = Task(
         description=f"""
-Escreva a INTRODUÇÃO (2 a 3 <p>) para '{tema}' usando a palavra‑chave '{palavra_chave}' apenas 1 vez.
+Escreva a INTRODUÇÃO (2–3 <p>) para '{tema}' usando a palavra‑chave '{palavra_chave}' apenas 1 vez.
 Estilo: acolhedor, informativo, sem jargões.
 Regras:
-- PT‑BR; parágrafos curtos (2 a 4 linhas).
+- PT‑BR; parágrafos curtos (2–4 linhas).
 - Sem clichês e sem promessas.
 - PROIBIDO: <h1> e qualquer imagem.
 - Não usar headings; apenas <p>.
-- Inclua 1 link interno natural no 2º parágrafo (anchor descritiva), se compatível.
-Concorrência (inspiração  a  NÃO copiar):
+- Se houver âncora compatível, inclua 1 link interno natural no 2º parágrafo (anchor descritiva).
+Concorrência (inspiração – NÃO copiar):
 {dados_concorrencia_txt}
 """.strip(),
-        expected_output="HTML com 2 a 3 <p> e possivelmente 1 link interno natural.",
+        expected_output="HTML com 2–3 <p> (sem imagens) e possivelmente 1 link interno natural.",
         agent=agente_intro
     )
 
     tarefa_outline = Task(
         description=f"""
 Crie a ESTRUTURA (apenas headings) para '{tema}':
-- 5 a 7 <h2> numerados ('1. ', '2. ', ...).
-- Até 2 <h3> por <h2> quando fizer sentido.
-- Pelo menos UM heading deve conter a palavra‑chave '{palavra_chave}' de forma natural.
-- Incluir um H2 de "Erros comuns e armadilhas" e outro de "Exemplos práticos / aplicação".
+- 5–7 <h2> numerados com prefixo '1. ', '2. ', '3. ' ...
+- Até 2 <h3> por <h2> quando fizer sentido (sem numeração).
+- Pelo menos UM heading (<h2> ou <h3>) deve conter a palavra‑chave '{palavra_chave}' de forma natural.
+- Incluir um H2 equivalente a "Erros comuns e armadilhas" e outro a "Exemplos práticos / aplicação".
+- Títulos específicos para dermatologia, claros e não genéricos.
 - Nunca usar <h1>. Não incluir conteúdo; só <h2>/<h3>.
 Baseie a cobertura na intenção de busca do paciente e lacunas dos concorrentes:
 {dados_concorrencia_txt}
@@ -224,24 +225,24 @@ Baseie a cobertura na intenção de busca do paciente e lacunas dos concorrentes
         description=f"""
 Desenvolva o CORPO a partir dos H2/H3 definidos, mantendo a numeração dos H2:
 - Mínimo 1200 palavras no post completo.
-- <p> curtos (2 a 4 linhas); usar <ul><li> quando listar.
+- <p> curtos (2–4 linhas); usar <ul><li> quando listar.
 - Explique: o que é, por que importa, como fazer, exemplos reais.
 - Variar semântica de '{palavra_chave}' sem keyword stuffing.
 - Sem autopromoção e sem CTA.
 - PROIBIDO inserir imagens.
 - Não inventar novos headings; usar apenas os fornecidos.
 - Quando fizer sentido, inclua links internos naturais no corpo (anchors descritivas).
-Concorrência (inspiração  a  NÃO copiar):
+Concorrência (inspiração – NÃO copiar):
 {dados_concorrencia_txt}
 """.strip(),
-        expected_output="HTML com <h2> numerados, <h3> opcionais, <p> e <ul><li>.",
+        expected_output="HTML com <h2> numerados, <h3> opcionais, <p> e <ul><li> (sem imagens).",
         agent=agente_desenvolvimento
     )
 
     tarefa_conclusao = Task(
         description="""
 Escreva a CONCLUSÃO:
-- 1 a 2 <p> resumindo aprendizados e próximos passos práticos.
+- 1–2 <p> resumindo aprendizados e próximos passos práticos.
 - Zero CTA (o CTA fica na assinatura).
 - Inclua 1 link interno natural se ainda não houver link na conclusão.
 - Não inserir imagens.
@@ -254,17 +255,17 @@ Escreva a CONCLUSÃO:
         description="""
 Una introdução, corpo e conclusão em um único HTML (conteúdo do body, sem <body>).
 Regras:
-- Garantir coerência, zero repetição e manter a NUMERAÇÃO dos <h2>.
+- Garantir coerência, zero repetição e manter a NUMERAÇÃO dos <h2> (1., 2., 3., ...).
 - Mínimo 1200 palavras no total.
 - Usar apenas: <h2>, <h3>, <p>, <ul>, <li>, <a>, <strong>, <em>.
-- PROIBIDO: <h1>, <html>, <head>, <title>, meta, estilos inline, QUALQUER imagem.
+- PROIBIDO: <h1>, <html>, <head>, <title>, meta, estilos inline, QUALQUER tag de imagem.
 Saída: somente o conteúdo do body.
 """.strip(),
-        expected_output="HTML WordPress-ready (apenas conteúdo do body).",
+        expected_output="HTML WordPress-ready (apenas conteúdo do body, sem imagens).",
         agent=agente_unificador
     )
 
-    # Links (texto) para os agentes de linkagem
+    # Links colados na descrição (seguindo padrão Invictus)
     links_internos_txt = "\n".join(
         f"- {li['titulo']}: {li['url']} | âncora sugerida: {li['anchor_sugerida']}"
         for li in links_internos
@@ -285,24 +286,23 @@ Links externos candidatos (use >=1, se listado; com target="_blank" rel="noopene
 {links_externos_txt}
 
 Regras:
-- Distribuição sugerida: 1 link interno na intro, 1 a 2 no corpo, 1 na conclusão (se aplicável).
+- Distribuição sugerida: 1 link interno na intro, 1–2 no corpo, 1 na conclusão (se aplicável).
 - Âncoras naturais e descritivas; nunca usar "clique aqui".
 - Não linkar em headings; apenas <p> e <li>.
 - Não quebrar HTML semântico; sem inline style.
 - Não adicionar imagens.
 Saída: HTML com linkagem aplicada.
 """.strip(),
-        expected_output="HTML com links internos/externos aplicados.",
+        expected_output="HTML com links internos/externos aplicados (sem imagens).",
         agent=agente_linkagem
     )
 
-    # Assinatura/CTA da Dra. Francine
     tarefa_contato = Task(
         description="""
 Anexar ao FINAL do HTML a assinatura da clínica (sem alterar o conteúdo anterior):
 <p><strong>👉 Agende sua consulta com a Dra. Francine Costa</strong></p>
 <p><a href="https://api.whatsapp.com/send?phone=5551999114348&text=Oi!%20Encontrei%20seu%20site%20e%20gostaria%20de%20mais%20informações." target="_blank" rel="noopener noreferrer">Fale pelo WhatsApp: (51) 99911‑4348</a></p>
-<p><strong>Clínica Francine Dermatologia</strong><br>R. 24 de Outubro, 1440  a  Sala 1107  a  Auxiliadora, Porto Alegre  a  RS</p>
+<p><strong>Clínica Francine Dermatologia</strong><br>R. 24 de Outubro, 1440 – Sala 1107 – Auxiliadora, Porto Alegre – RS</p>
 """.strip(),
         expected_output="HTML final com assinatura adicionada.",
         agent=agente_contato
@@ -311,7 +311,7 @@ Anexar ao FINAL do HTML a assinatura da clínica (sem alterar o conteúdo anteri
     tarefa_revisar = Task(
         description=f"""
 Revise o HTML final quanto a:
-- Ortografia/gramática PT‑BR; clareza; tom acolhedor e profissional.
+- Ortografia/gramática PT‑BR; clareza; tom acolhedor e profissional da clínica.
 - Estilo: H2 numerados, parágrafos curtos, listas quando úteis, distribuição de links.
 - Coerência e distribuição de links; âncoras descritivas; ausência de overstuffing de '{palavra_chave}'.
 - Respeito às proibições de imagens e de <h1>.
@@ -330,7 +330,7 @@ Aplique TODAS as melhorias propostas, preservando:
 - Ausência de imagens e de <h1>.
 Saída: HTML final (somente conteúdo do body).
 """.strip(),
-        expected_output="HTML final revisado (body only).",
+        expected_output="HTML final revisado (body only, sem imagens).",
         agent=agente_executor
     )
 
