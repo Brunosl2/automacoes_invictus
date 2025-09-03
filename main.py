@@ -11,7 +11,7 @@ from crews.dr_gerson.crew_gerson import build_crew_gerson
 from crews.villa_puppy.crew_villa_puppy import build_crew_villapuppy
 from crews.dra_angelica.crew_angelica import build_crew_angelica
 from crews.dra_emmen.crew_emmen import build_crew_emmen
-
+from crews.dra_catarine.crew_catarine import build_crew_catarine
 
 
 
@@ -95,6 +95,15 @@ def executar_crew_emmen(tema: str = Query(...), palavra_chave: str = Query(...))
     crew = build_crew_emmen(tema, palavra_chave)
     resultado = crew.kickoff()
     return JSONResponse(content=resultado.model_dump())
+
+
+@app.get("/dra_catarine")
+@app.get("/dra_catarine_backlink")
+def executar_crew_catarine(tema: str = Query(...), palavra_chave: str = Query(...)):
+    crew = build_crew_catarine(tema, palavra_chave)
+    resultado = crew.kickoff()
+    return JSONResponse(content=resultado.model_dump())
+
 
 @app.get("/teste")
 def teste():
